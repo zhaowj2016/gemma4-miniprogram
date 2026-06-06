@@ -1,5 +1,10 @@
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gemma_core"))
+
 import streamlit as st
 from gemma_client import call_gemma_with_tools
+from prompt_builder import build_prompt, build_repair_prompt
 from validators import validate_project
 from zip_exporter import export_zip
 from golden_examples import get_golden_example
@@ -53,10 +58,10 @@ if generate_clicked and user_input.strip():
     st.session_state.page_files = None
     st.session_state.used_fallback = False
 
-    # Step 1: Initial generation
+    # Step 1: Initial generation (few-shot prompt from gemma_core/prompt_builder)
     with st.spinner("正在调用 Gemma 4 Native Function Calling 生成代码..."):
         try:
-            result = call_gemma_with_tools(user_input.strip())
+            result = call_gemma_with_tools(build_prompt(user_input.strip()))
         except Exception as e:
             st.error(f"生成失败：{e}")
             st.stop()
@@ -71,13 +76,11 @@ if generate_clicked and user_input.strip():
 
     # Step 3: Self-heal once if validation fails
     if not val_result.ok:
-        repair_prompt = (
-            f"{user_input.strip()}\n\n"
-            "【上次生成存在以下错误，请修复后重新生成】\n"
-            + "\n".join(val_result.hard_errors)
-        )
         with st.spinner("⏳ 正在进行第 1 次自愈重试..."):
             try:
+                repair_prompt = build_repair_prompt(
+                    user_input.strip(), result, val_result.hard_errors
+                )
                 result = call_gemma_with_tools(repair_prompt)
                 val_files = {
                     "pages/index/index.wxml": result.get("wxml", ""),

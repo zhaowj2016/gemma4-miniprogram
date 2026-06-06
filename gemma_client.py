@@ -31,19 +31,6 @@ TOOLS = [
     }
 ]
 
-_SYSTEM_PREFIX = (
-    "你是微信小程序页面生成器。请调用 create_miniprogram_page 工具，"
-    "输出页面的 wxml/wxss/js 三个文件。\n\n"
-    "严格约束：\n"
-    "- 只能用: view, text, image, button, input, textarea, form, "
-    "scroll-view, swiper, swiper-item, block\n"
-    "- 禁止 HTML 标签: <div> <p> <span> <img> <a> 等，一律用 view/text\n"
-    "- 禁止在 {{}} 里调函数，数据格式化在 JS 里完成存为字符串\n"
-    "- swiper 用 current，不用 current-index\n"
-    "- 禁止: wx.login / wx.request / wx.requestPayment / wx.getLocation / wx.cloud\n"
-    "- 所有数据用本地 mock 写在 JS data 里\n\n"
-    "用户需求：\n"
-)
 
 
 def _get_api_key() -> str | None:
@@ -109,7 +96,7 @@ def call_gemma_with_tools(prompt: str) -> dict:
         "contents": [
             {
                 "role": "user",
-                "parts": [{"text": _SYSTEM_PREFIX + prompt}]
+                "parts": [{"text": prompt}]
             }
         ],
         "tools": [

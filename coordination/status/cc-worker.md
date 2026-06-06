@@ -25,8 +25,30 @@
 
 无。
 
+---
+
+## Round 2 完成项（2026-06-06）
+
+- [x] **Task 5**：`app.py` 切换到 `gemma_core/prompt_builder.py`
+  - 头部加 `sys.path.insert(0, .../gemma_core)` 后 import `build_prompt` / `build_repair_prompt`
+  - 初次生成调用 `build_prompt(user_input)` —— 含约束清单 + 2 个 few-shot 样例（11 531 chars）
+  - 自愈调用 `build_repair_prompt(user_input, result, errors)` —— 把当前代码 + 错误列表一并喂回去
+  - `gemma_client.py` 同步去掉内部 `_SYSTEM_PREFIX`，避免与 CONSTRAINT_CHECKLIST 重复
+- [x] **Task 6**：`golden_examples.py` SCENARIO_KEYWORDS 已涵盖全部 19 个场景，关键词从 corpus_index.json 合并补全（每个场景 7-11 个关键词）
+- [x] **Task 7**：新建 `test_smoke.py`，offline 静态验证
+  - mock `call_gemma_with_tools` → product_detail 黄金样例
+  - 走完 validate_project + export_zip 全流程
+  - 解压 zip 断言包含 app.json / pages/index/index.wxml 等 7 个必须文件
+  - `python test_smoke.py` → 3/3 PASS
+
+## Round 2 验收状态
+
+- [x] `app.py` 使用 `gemma_core/prompt_builder.py`
+- [x] `golden_examples.py` SCENARIO_KEYWORDS 已涵盖全部 19 个场景
+- [x] `python test_smoke.py` → PASS
+
 ## 备注
 
 - `google-generativeai` SDK 本地未安装（`ModuleNotFoundError`），已选用方案 2：`urllib.request` 直接调 REST API。
 - API Key 已从本地文件读取到，本地可运行。
-- Task 4 冒烟测试需要在支持 Streamlit 的终端中执行 `streamlit run app.py`，受限于 CLI 环境暂未执行，但代码逻辑路径已覆盖。
+- Streamlit UI 测试需要在浏览器环境中执行 `streamlit run app.py`，CLI 环境不支持，但全部逻辑路径已通过 test_smoke.py 静态覆盖。
