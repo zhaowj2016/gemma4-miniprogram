@@ -10,7 +10,10 @@ from typing import Any, Callable
 
 BASE_DIR = Path(__file__).resolve().parent
 GOLDEN_DIR = BASE_DIR / "golden_examples"
-BENCHMARK_PATH = GOLDEN_DIR / "benchmark_prompts.json"
+BENCHMARK_PATHS = (
+    BASE_DIR / "benchmark_prompts.json",
+    GOLDEN_DIR / "benchmark_prompts.json",
+)
 
 sys.dont_write_bytecode = True
 if hasattr(sys.stdout, "reconfigure"):
@@ -54,7 +57,7 @@ def main() -> None:
 
 
 def _load_cases() -> list[dict[str, str]]:
-    benchmark = _load_json(BENCHMARK_PATH)
+    benchmark = _load_first_json(BENCHMARK_PATHS)
     cases = _cases_from_benchmark(benchmark)
     if cases:
         return cases
@@ -195,6 +198,14 @@ def _load_json(path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def _load_first_json(paths: tuple[Path, ...]) -> Any:
+    for path in paths:
+        data = _load_json(path)
+        if data is not None:
+            return data
+    return None
 
 
 def _guess_golden_id(prompt: str) -> str:
