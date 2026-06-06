@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 import re
 from pathlib import Path
 from typing import Any
@@ -26,7 +27,31 @@ CONSTRAINT_CHECKLIST = """
 - 禁止调用真实能力 API: wx.login、wx.request、wx.requestPayment、wx.getLocation、wx.cloud。
 - 数据必须使用本地 mock, 写在 JS 的 data 中。
 - 必须全量输出三个文件内容, 分别对应 pages/index/index.wxml、pages/index/index.wxss、pages/index/index.js。
+
+代码完整度要求（关键）:
+- WXML: 至少覆盖「顶部 Banner/轮播」「主内容区（3+个功能卡片）」「底部操作栏」三大区域，100 行以上。
+- WXSS: 必须包含完整的卡片样式、渐变色、圆角、阴影、active 状态动画，150 行以上。
+- JS data: 必须有丰富 mock 数据——至少 3 个数组字段（每个含 5-6 条目）+ 嵌套对象 + 状态管理字段（如 activeTab, cartCount, isLoading）。
+- 图片: WXML 的 <image> src 属性使用真实 Unsplash URL（https://images.unsplash.com/photo-XXXXXXX?w=375&q=80），photo ID 只含小写字母和数字（0-9 a-f），与内容主题匹配，每张图片 ID 各不相同。
+- 交互完整: 包含 tab 切换、点击反馈（bindtap）、数量增减或收藏逻辑（在 JS methods 中实现）。
+
+设计排版规范（必须遵守）:
+- 间距系统: 使用 8rpx 的整数倍——section 间距 40-48rpx，card 内边距 24-32rpx，元素间距 16-24rpx，避免随意数值。
+- 字号层级: 大标题 40-48rpx font-weight:900，小标题 28-32rpx font-weight:700，正文 24-26rpx，辅助说明 20-22rpx color:#888，层级清晰可辨。
+- 卡片规范: 每张卡片必须有 border-radius(16-24rpx) + box-shadow(0 4rpx 16rpx rgba(0,0,0,.08)) + overflow:hidden，图片区高度 180-240rpx。
+- 色彩体系: 定义主色（如 #1a73e8）+ 辅色 + 背景色（如 #f5f7fa）+ 文字色（#1a1a1a / #666 / #999），全页面一致不混用。
+- CTA 按钮: 主按钮高度 ≥ 88rpx，用渐变背景（linear-gradient），圆角 ≥ 16rpx，字重 700，阴影增强点击感。
+- 列表项: 每条数据要包含图片 + 标题 + 副文本 + 操作控件（价格/按钮/标签），不要只有文字。
 """.strip()
+
+_STYLE_POOL = [
+    "视觉风格：清爽白底，蓝色主色调，圆角卡片，适合通用电商/工具类。",
+    "视觉风格：温暖米色系，橙红点缀，适合餐饮/生活类场景。",
+    "视觉风格：深色夜间模式，渐变紫蓝，现代科技感。",
+    "视觉风格：极简主义，大量留白，细线条，高级感商务定位。",
+    "视觉风格：活力橙黄，圆润图标，面向年轻消费者。",
+    "视觉风格：绿色清新，自然系，适合健康/运动/户外。",
+]
 
 _STOP_WORDS = {
     "the",
@@ -47,20 +72,136 @@ _STOP_WORDS = {
 }
 
 
-def build_prompt(user_prompt: str) -> str:
+def build_prompt(user_prompt: str, style_hint: str | None = None) -> str:
     """Build a few-shot prompt from golden_examples and the user request."""
     examples = _load_examples()
     selected = _select_examples(user_prompt, examples, limit=2)
 
+    # Random style direction: nudges Gemma to make distinct design decisions
+    hint = style_hint or random.choice(_STYLE_POOL)
+
     parts = [CONSTRAINT_CHECKLIST]
     if selected:
-        parts.append("参考样例(few-shot):")
+        parts.append("参考样例(few-shot)（仅作结构参考，禁止照搬配色和布局）:")
         for example in selected:
             parts.append(_format_example(example))
 
+    parts.append(f"设计要求（自主发挥，体现差异化）：{hint}")
     parts.append("用户需求:")
     parts.append(user_prompt.strip())
     return "\n\n".join(parts).strip() + "\n"
+
+
+CLARIFY_TEMPLATE = """\
+你是一位资深微信小程序产品经理。用户描述了一个初步的小程序需求，请深入理解用户意图，针对这个具体需求提出 2-3 个最关键的澄清问题，每个问题给出 3 个具体的选项供用户快速选择。
+
+输出格式（严格 JSON 数组，不输出任何其他内容，不加 markdown 代码块）：
+[
+  {{"q": "针对用户需求的具体问题（15字以内）", "a": "选项一（具体内容，10字以内）", "b": "选项二（具体内容，10字以内）", "c": "选项三（具体内容，10字以内）"}},
+  ...
+]
+
+核心要求：
+- 问题必须针对「{user_input}」这个具体需求，不要问与该需求无关的通用问题
+- 三个选项要有明显差异，覆盖最常见的几种方向
+- 选项直接写内容，不加 A/B/C 前缀
+
+用户需求：{user_input}
+"""
+
+_DEFAULT_CLARIFY_QUESTIONS = [
+    {"q": "主要使用场景？", "a": "商品展示与购买", "b": "活动报名预约", "c": "内容浏览收藏"},
+    {"q": "目标用户群体？", "a": "年轻消费者（18-35岁）", "b": "商务职场人士", "c": "全年龄通用"},
+    {"q": "视觉风格偏好？", "a": "简约白底，专业感", "b": "活泼多彩，年轻化", "c": "深色高端，科技感"},
+]
+
+
+def parse_clarify_questions(text: str) -> list[dict]:
+    """Parse structured question+options list from Gemma's JSON response."""
+    import json as _json
+    import re as _re
+    # Strip markdown code fences if present
+    text = _re.sub(r'```(?:json)?\s*', '', text).strip()
+    m = _re.search(r'\[.*\]', text, _re.DOTALL)
+    if m:
+        try:
+            qs = _json.loads(m.group(0))
+            if isinstance(qs, list) and qs:
+                valid = [
+                    q for q in qs[:3]
+                    if isinstance(q, dict)
+                    and all(k in q for k in ("q", "a", "b", "c"))
+                ]
+                if valid:
+                    return valid
+        except Exception:
+            pass
+    return [q.copy() for q in _DEFAULT_CLARIFY_QUESTIONS]
+
+
+def build_enriched_prompt(
+    original: str,
+    qa_pairs: list[tuple[str, str]],
+    image_count: int = 0,
+    style_hint: str | None = None,
+) -> str:
+    """Build generation prompt from original intent + clarification Q&A + optional images."""
+    base = build_prompt(original, style_hint=style_hint)
+    answered = [(q, a) for q, a in qa_pairs if a and a.strip()]
+    if answered:
+        qa_lines = "\n".join(f"- {q}：{a}" for q, a in answered)
+        base += f"\n\n需求补充（来自用户确认）：\n{qa_lines}"
+    if image_count == 1:
+        base += (
+            "\n\n【多模态输入】用户上传了 1 张参考图片（附在消息中）。"
+            "请仔细分析图片内容和视觉风格，自主判断图片用途（商品主图/banner/UI参考等），"
+            "并在 WXML 的 image 标签中使用与图片主题匹配的 Unsplash 真实图片 URL"
+            "（格式：https://images.unsplash.com/photo-XXXXXXX?w=375&q=80，photo ID 只含小写和数字），"
+            "在 WXSS 中参考图片的配色方案。"
+        )
+    elif image_count > 1:
+        base += (
+            f"\n\n【多模态输入】用户上传了 {image_count} 张参考图片（附在消息中）。"
+            "请逐一分析每张图片的内容：\n"
+            "- 商品/产品图 → 作为轮播图或商品主图，在 image src 填入匹配的 Unsplash URL\n"
+            "- UI 设计稿/截图 → 参考其布局结构和组件设计\n"
+            "- 背景/场景图 → 提取配色用于 WXSS\n"
+            "- 图标/logo → 用于头像区或导航区\n"
+            "所有图片都应有实际用途，URL 格式：https://images.unsplash.com/photo-XXXXXXX?w=375&q=80（photo ID 仅小写字母和数字，每张各不同）"
+        )
+    return base
+
+
+_REVIEW_CHECKLIST = """
+你是微信小程序代码 QA 工程师。对以下代码做自检，通过 create_miniprogram_page 工具返回最终优化版本。
+
+自检清单（只修复真实存在的问题，不要过度改动）:
+1. 代码量 < 900 行 → 扩充 JS mock 数据（每个数组补至 5-6 条，每条含更多字段）；增加 WXML 内容区块
+2. JS data 任意数组条目 < 4 个 → 补充至 5-6 条，数据有真实感
+3. 缺少底部固定操作栏（购买/提交/购物车区域）→ 补充，样式参考设计规范
+4. Unsplash photo ID 含大写字母 → 改为全小写（photo ID 仅 0-9 a-f 共 16 位，如 photo-1a2b3c4d5e6f1a2b）
+5. 图片 URL 全为占位符或 placehold.co → 替换为真实 Unsplash URL
+6. 缺少 active/selected 状态样式 → 为 tab、分类、按钮补充样式
+7. 卡片无 box-shadow 或 border-radius → 补充（16-24rpx 圆角 + 阴影）
+
+所有问题修复后通过 create_miniprogram_page 工具返回完整三文件（即使无改动也必须调用工具返回）。
+""".strip()
+
+
+def build_review_prompt(user_prompt: str, page_files: dict) -> str:
+    """Second-pass self-review prompt: polish quality without changing scope."""
+    normalized = _normalize_page_files(page_files)
+    wxml_l = len(normalized["wxml"].splitlines())
+    wxss_l = len(normalized["wxss"].splitlines())
+    js_l   = len(normalized["js"].splitlines())
+    total  = wxml_l + wxss_l + js_l
+    code_json = json.dumps(normalized, ensure_ascii=False, indent=2)
+    return (
+        f"{_REVIEW_CHECKLIST}\n\n"
+        f"原始用户需求：{user_prompt.strip()}\n"
+        f"当前代码量：WXML {wxml_l}行 · WXSS {wxss_l}行 · JS {js_l}行 · 共 {total}行\n\n"
+        f"待审核代码：\n{code_json}\n"
+    )
 
 
 def build_repair_prompt(
