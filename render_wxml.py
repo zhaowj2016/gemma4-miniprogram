@@ -203,6 +203,17 @@ def _is_truthy(val) -> bool:
 
 
 def _eval_condition(expr: str, data: dict) -> bool:
+    expr = expr.strip()
+    # Logical OR — lowest precedence, evaluate left-to-right
+    if " || " in expr:
+        return any(_eval_condition(part, data) for part in expr.split(" || "))
+    # Logical AND
+    if " && " in expr:
+        return all(_eval_condition(part, data) for part in expr.split(" && "))
+    # Logical NOT prefix  (!expr, but not !== or !=)
+    if expr.startswith("!") and not expr.startswith("!="):
+        return not _eval_condition(expr[1:], data)
+    # Comparison operators (must check multi-char ops before single-char)
     for op, fn in [
         ("===", lambda a, b: str(a) == str(b)),
         ("!==", lambda a, b: str(a) != str(b)),
@@ -210,6 +221,8 @@ def _eval_condition(expr: str, data: dict) -> bool:
         ("<=",  lambda a, b: _to_num(a) <= _to_num(b)),
         (">",   lambda a, b: _to_num(a) > _to_num(b)),
         ("<",   lambda a, b: _to_num(a) < _to_num(b)),
+        ("==",  lambda a, b: str(a) == str(b)),
+        ("!=",  lambda a, b: str(a) != str(b)),
     ]:
         if op in expr:
             left, right = expr.split(op, 1)

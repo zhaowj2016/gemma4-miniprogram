@@ -28,12 +28,12 @@ CONSTRAINT_CHECKLIST = """
 - 数据必须使用本地 mock, 写在 JS 的 data 中。
 - 必须全量输出三个文件内容, 分别对应 pages/index/index.wxml、pages/index/index.wxss、pages/index/index.js。
 
-代码完整度要求（关键）:
-- WXML: 至少覆盖「顶部 Banner/轮播」「主内容区（3+个功能卡片）」「底部操作栏」三大区域，100 行以上。
-- WXSS: 必须包含完整的卡片样式、渐变色、圆角、阴影、active 状态动画，150 行以上。
-- JS data: 必须有丰富 mock 数据——至少 3 个数组字段（每个含 5-6 条目）+ 嵌套对象 + 状态管理字段（如 activeTab, cartCount, isLoading）。
-- 图片: WXML 的 <image> src 属性使用真实 Unsplash URL（https://images.unsplash.com/photo-XXXXXXX?w=375&q=80），photo ID 只含小写字母和数字（0-9 a-f），与内容主题匹配，每张图片 ID 各不相同。
-- 交互完整: 包含 tab 切换、点击反馈（bindtap）、数量增减或收藏逻辑（在 JS methods 中实现）。
+代码完整度要求（关键，总行数必须 ≥ 1000 行）:
+- WXML: 覆盖「顶部 Banner/轮播」「分类筛选 Tab」「主内容网格（6+卡片）」「推荐/统计区块」「底部固定操作栏」五大区域，≥ 200 行。
+- WXSS: 完整的卡片样式、渐变色、圆角、阴影、active 状态动画、骨架屏占位、响应式布局，≥ 400 行。
+- JS data: 丰富 mock——至少 4 个数组（每个 6-8 条目）+ 多层嵌套对象 + 完整状态管理字段，≥ 150 行。
+- 图片: JS data 的每条数据都必须有 image 字段（真实 Unsplash URL）；WXML 里 banner/hero 图可直接写 src URL，产品/列表图通过 {{item.image}} 绑定。URL 格式 https://images.unsplash.com/photo-ID?w=375&q=80，photo ID 仅含小写字母和数字，每张各不同。
+- 交互完整: tab 切换（bindtap + data-* 传参）、数量增减、收藏/点赞、加购物车（在 JS methods 实现）。
 
 设计排版规范（必须遵守）:
 - 间距系统: 使用 8rpx 的整数倍——section 间距 40-48rpx，card 内边距 24-32rpx，元素间距 16-24rpx，避免随意数值。
