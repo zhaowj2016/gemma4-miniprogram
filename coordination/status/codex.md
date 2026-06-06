@@ -12,6 +12,9 @@
 - [x] 修复 `gemma_core/eval_harness.py` 的 benchmark 路径，改为读取 `gemma_core/benchmark_prompts.json`
 - [x] 跑通 `python gemma_core\eval_harness.py`，通过率 19/19 (100.0%)
 - [x] 验证 `build_prompt` / `build_repair_prompt` 可导入并正常构造 prompt
+- [x] Round 2：替换根目录 `README.md` 为比赛提交格式
+- [x] Round 2：更新 `gemma_core/README.md`，补充目录用途、评测命令、import 示例和 19 个场景
+- [x] Round 2：复跑 `python gemma_core\eval_harness.py`，通过率 19/19 (100.0%)
 
 ## 阻塞项
 - 无
