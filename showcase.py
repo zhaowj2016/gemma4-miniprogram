@@ -8,8 +8,9 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gemma_core"))
 
+import base64
 import streamlit as st
-import streamlit.components.v1 as components
+
 from golden_examples import load_golden_from_folder
 from scaffold import APP_WXSS
 from render_wxml import render_phone_html
@@ -51,7 +52,8 @@ for tab, (folder, label) in zip(tabs, SHOWCASE):
             st.markdown(f"**{label} — 手机预览**")
             try:
                 phone_html = render_phone_html(wxml, wxss, js, app_wxss=APP_WXSS)
-                components.html(phone_html, height=720, scrolling=False)
+                b64 = base64.b64encode(phone_html.encode("utf-8")).decode("ascii")
+                st.iframe(f"data:text/html;base64,{b64}", height=720)
             except Exception as e:
                 st.error(f"渲染失败：{e}")
                 import traceback

@@ -2,6 +2,7 @@ import sys
 import os
 import uuid
 import json
+import base64
 from pathlib import Path
 
 _GEMMA_CORE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gemma_core")
@@ -9,7 +10,7 @@ if _GEMMA_CORE not in sys.path:
     sys.path.insert(0, _GEMMA_CORE)
 
 import streamlit as st
-import streamlit.components.v1 as components
+
 from gemma_client import call_gemma_with_tools, call_gemma_text
 from prompt_builder import (
     build_prompt,
@@ -82,7 +83,9 @@ if "share" in _params:
         with _left:
             try:
                 from scaffold import APP_WXSS as _aws
-                components.html(render_phone_html(pf["wxml"], pf["wxss"], pf["js"], _aws), height=720, scrolling=False)
+                _ph = render_phone_html(pf["wxml"], pf["wxss"], pf["js"], _aws)
+                _b64 = base64.b64encode(_ph.encode("utf-8")).decode("ascii")
+                st.iframe(f"data:text/html;base64,{_b64}", height=720)
             except Exception as _e:
                 st.error(f"预览渲染失败：{_e}")
         with _right:
@@ -449,7 +452,8 @@ elif st.session_state.stage == "done" and st.session_state.page_files:
                 app_wxss=APP_WXSS,
                 user_images=st.session_state.get("image_list"),
             )
-            components.html(phone_html, height=720, scrolling=False)
+            _b64 = base64.b64encode(phone_html.encode("utf-8")).decode("ascii")
+            st.iframe(f"data:text/html;base64,{_b64}", height=720)
         except Exception as e:
             st.error(f"预览渲染失败：{e}")
 
