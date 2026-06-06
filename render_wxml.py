@@ -351,54 +351,56 @@ def expand_for_loops(html: str, data: dict) -> str:
 # ── wx:if 条件显隐 ────────────────────────────────────────────────────────────
 
 def apply_wx_if(html: str, data: dict | None = None) -> str:
-    """Evaluate wx:if conditions.
+    """Evaluate wx:if conditions using proper nested-tag matching."""
 
-    When data is provided, raw {{expr}} conditions are evaluated with
-    _eval_condition so that comparisons like activeTab === 'gallery' work.
-    After fill_bindings the expr is already a resolved string — fall back to
-    simple truthiness check in that case.
-    """
-    # Pattern A: still has {{expr}} — evaluate against data
+    def _process(html: str, pat: re.Pattern, handler) -> str:
+        result = []
+        pos = 0
+        for m in pat.finditer(html):
+            if m.start() < pos:
+                continue
+            tag = m.group(1)
+            body_end, close_end = _find_matching_close(html, tag, m.end())
+            body = html[m.end():body_end]
+            result.append(html[pos:m.start()])
+            pos = close_end
+            result.append(handler(m, tag, body))
+        result.append(html[pos:])
+        return "".join(result)
+
+    # Pattern A: still has {{expr}} — evaluate against data, keep in DOM
     if data is not None:
         pat_raw = re.compile(
-            r'<(div|span)\b([^>]*?)\s+wx:if="\{\{([^}]+)\}\}"([^>]*)>(.*?)</\1>',
-            re.DOTALL,
+            r'<(div|span)\b([^>]*?)\s+wx:if="\{\{([^}]+)\}\}"([^>]*?)>'
         )
-        def handle_raw(m):
-            tag, pre, expr, post, body = m.groups()
+        def handle_raw(m, tag, body):
+            pre, expr, post = m.group(2), m.group(3), m.group(4)
             try:
                 show = _eval_condition(expr.strip(), data)
             except Exception:
                 show = True
-            # Keep element in DOM so the JS runtime can toggle it via data-wx-if;
-            # store the original expression for __evalExpr() re-evaluation.
             safe_expr = expr.strip().replace('"', '&quot;')
             hidden = '' if show else ' style="display:none"'
             return f'<{tag}{pre}{post} data-wx-if="{safe_expr}"{hidden}>{body}</{tag}>'
         for _ in range(4):
-            new = pat_raw.sub(handle_raw, html)
+            new = _process(html, pat_raw, handle_raw)
             if new == html:
                 break
             html = new
 
-    # Pattern B: after fill_bindings — condition is a plain string
+    # Pattern B: after fill_bindings — plain-string condition
     pat_plain = re.compile(
-        r'<(div|span)\b([^>]*?)\s+wx:if="([^"]*)"([^>]*)>(.*?)</\1>',
-        re.DOTALL,
+        r'<(div|span)\b([^>]*?)\s+wx:if="([^"]*)"([^>]*?)>'
     )
-    def handle_plain(m):
-        tag, pre, condition, post, body = m.groups()
-        c = condition.strip()
-        is_falsy = (
-            not c
-            or c in ("false", "0")
-            or re.match(r'^\[[\w.]+\]$', c)
-        )
+    def handle_plain(m, tag, body):
+        pre, cond, post = m.group(2), m.group(3), m.group(4)
+        c = cond.strip()
+        is_falsy = not c or c in ("false", "0") or re.match(r'^\[[\w.]+\]$', c)
         if is_falsy:
             return ""
         return f"<{tag}{pre}{post}>{body}</{tag}>"
     for _ in range(3):
-        new = pat_plain.sub(handle_plain, html)
+        new = _process(html, pat_plain, handle_plain)
         if new == html:
             break
         html = new
