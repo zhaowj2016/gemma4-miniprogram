@@ -15,6 +15,10 @@
 - [x] Round 2：替换根目录 `README.md` 为比赛提交格式
 - [x] Round 2：更新 `gemma_core/README.md`，补充目录用途、评测命令、import 示例和 19 个场景
 - [x] Round 2：复跑 `python gemma_core\eval_harness.py`，通过率 19/19 (100.0%)
+- [x] Round 3：移除 `README.md` 中的本机绝对路径，改为 `.env.example` 配置说明
+- [x] Round 3：替换 Demo 占位为本地访问、生成代码和微信开发者工具导入说明
+- [x] Round 3：复跑 `python gemma_core\eval_harness.py`，通过率 19/19 (100.0%)
+- [x] Round 3：确认 `README.md` 不含 `E:\`、`file+desktop`、`gemma_key` 等本地路径内容
 
 ## 阻塞项
 - 无
