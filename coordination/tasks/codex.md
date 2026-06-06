@@ -142,3 +142,46 @@ gemma_core/golden_examples/ 包含 19 个预验证场景，全部通过 validato
 - [ ] 根目录 `README.md` 已替换为新内容，符合比赛格式
 - [ ] `gemma_core/README.md` 已新建
 - [ ] `coordination/status/codex.md` 追加 Round 2 完成项，git commit
+
+---
+
+## [总控补充 2026-06-06] Round 3 任务
+
+**背景**：Round 2 已 merge，README 已是比赛格式。现在做最后的提交打磨。
+
+### 任务 E：修复 README 中的本地路径
+
+`README.md` 第 12 行提到 `E:\file+desktop\gemma_key.txt`，这是提交人电脑的绝对路径，公开提交后评委看到会扣印象分。
+
+**修改该句为**：
+```
+运行前请配置环境变量 `GEMINI_API_KEY` 或复制 `.env.example` 为 `.env` 填入 key。
+```
+删掉原句中的本地路径部分，其余内容保持不变。
+
+### 任务 F：验证 eval_harness 在 merge 后仍可用
+
+在 `gemma_match_codex/` 目录下执行：
+```bash
+python gemma_core/eval_harness.py
+```
+确认通过率仍是 19/19。若有路径问题自行修复。将结果记录在 status 文件。
+
+### 任务 G：完善 README Demo 占位说明
+
+当前 Demo 章节是 `占位：可添加截图路径或演示 GIF`。将其替换为对评委有用的说明：
+```markdown
+## Demo
+
+启动后访问 `http://localhost:8501`，在输入框描述目标页面（或点击示例按钮），
+点击「生成代码」即可在约 5-10 秒内看到 WXML / WXSS / JS 三段代码及 ZIP 下载按钮。
+
+生成的 ZIP 可直接导入[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，
+选择「游客模式」或将 `project.config.json` 中的 `touristappid` 替换为真实 AppID。
+```
+
+### 验收（Round 3）
+- [ ] `README.md` 不含本地绝对路径
+- [ ] `python gemma_core/eval_harness.py` 仍 19/19
+- [ ] README Demo 章节已替换为有效说明
+- [ ] `coordination/status/codex.md` 追加 Round 3 完成项，git commit

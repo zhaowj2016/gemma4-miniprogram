@@ -125,3 +125,73 @@ from prompt_builder import build_prompt, build_repair_prompt
 - [ ] `golden_examples.py` 的 SCENARIO_KEYWORDS 已涵盖全部 19 个场景
 - [ ] `python test_smoke.py` 输出 PASS
 - [ ] `coordination/status/cc-worker.md` 追加 Round 2 完成项，git commit
+
+---
+
+## [总控补充 2026-06-06] Round 3 任务
+
+**背景**：Round 2 已 merge。pipeline 端到端可用，test_smoke.py 3/3 PASS。现在做提交前的最后修整。
+
+### 任务 8：修复 requirements.txt
+
+`google-generativeai>=0.8` 在 Round 1 遗留下来，但实际已改用 `urllib.request`，该库并未安装也未 import。安装失败会让评委直接劝退。
+
+**修改为**：
+```
+streamlit>=1.35
+```
+仅保留这一行，去掉 `google-generativeai`。
+
+### 任务 9：新建 .env.example
+
+在根目录新建 `.env.example`，内容：
+```
+# 在 Google AI Studio 获取：https://aistudio.google.com/app/apikey
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+不要包含任何真实 key。
+
+### 任务 10：Live API 多场景测试
+
+用以下 5 个 prompt 依次调用 `call_gemma_with_tools(build_prompt(...))`，记录每个结果：
+1. "生成一个活动报名页"
+2. "生成一个商品详情页，包含价格和购买按钮"
+3. "生成一个餐厅点餐页面"
+4. "生成一个个人中心页，显示用户信息和订单入口"
+5. "生成一个课程详情页"
+
+对每个结果跑 `validate_project`，在 status 文件记录：Function Call 触发（Y/N）+ 校验结果（PASS/FAIL）+ hard_errors（如有）。
+
+测试脚本示例：
+```python
+import sys, os
+sys.path.insert(0, '.')
+sys.path.insert(0, os.path.join('.', 'gemma_core'))
+from gemma_client import call_gemma_with_tools
+from prompt_builder import build_prompt
+from validators import validate_project
+
+prompts = [
+    "生成一个活动报名页",
+    "生成一个商品详情页，包含价格和购买按钮",
+    "生成一个餐厅点餐页面",
+    "生成一个个人中心页，显示用户信息和订单入口",
+    "生成一个课程详情页",
+]
+for p in prompts:
+    result = call_gemma_with_tools(build_prompt(p))
+    val = validate_project({
+        'pages/index/index.wxml': result.get('wxml',''),
+        'pages/index/index.wxss': result.get('wxss',''),
+        'pages/index/index.js':   result.get('js',''),
+    }, full_project=False)
+    print(f"[{'PASS' if val.ok else 'FAIL'}] {p[:20]}")
+    if not val.ok:
+        print(f"  Errors: {val.hard_errors[:2]}")
+```
+
+### 验收（Round 3）
+- [ ] `requirements.txt` 只剩 `streamlit>=1.35`
+- [ ] `.env.example` 已新建
+- [ ] Live 5-prompt 测试结果已记录在 status 文件
+- [ ] `coordination/status/cc-worker.md` 追加 Round 3 完成项，git commit
