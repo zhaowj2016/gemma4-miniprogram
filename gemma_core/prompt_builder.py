@@ -173,18 +173,19 @@ def build_enriched_prompt(
 
 
 _REVIEW_CHECKLIST = """
-你是微信小程序代码 QA 工程师。对以下代码做自检，通过 create_miniprogram_page 工具返回最终优化版本。
+你是微信小程序 pages/index/index 页面代码生成器。
+立即通过 create_miniprogram_page 工具输出完整最终版本，不要输出任何解释文字。
 
-自检清单（只修复真实存在的问题，不要过度改动）:
-1. 代码量 < 900 行 → 扩充 JS mock 数据（每个数组补至 5-6 条，每条含更多字段）；增加 WXML 内容区块
-2. JS data 任意数组条目 < 4 个 → 补充至 5-6 条，数据有真实感
-3. 缺少底部固定操作栏（购买/提交/购物车区域）→ 补充，样式参考设计规范
-4. Unsplash photo ID 含大写字母 → 改为全小写（photo ID 仅 0-9 a-f 共 16 位，如 photo-1a2b3c4d5e6f1a2b）
-5. 图片 URL 全为占位符或 placehold.co → 替换为真实 Unsplash URL
-6. 缺少 active/selected 状态样式 → 为 tab、分类、按钮补充样式
-7. 卡片无 box-shadow 或 border-radius → 补充（16-24rpx 圆角 + 阴影）
+基于草稿代码升级为高质量完整版，升级目标（直接在输出代码中体现，无需说明）：
+1. 总行数 ≥ 1000 行：JS mock 数据每个数组扩至 6-8 条，每条含 6+ 字段；WXML 增加内容区块（推荐卡片、统计数字、功能入口网格）
+2. JS data 任意数组条目 < 4 → 补充至 6-8 条，数据有真实感（真实城市/品牌/价格）
+3. 若缺少底部固定操作栏 → 补充（购买/提交/寄件等场景适配按钮）
+4. Unsplash photo ID 只能含 0-9 a-f 共 16 位小写字母，示例：photo-1a2b3c4d5e6f1a2b
+5. 图片 URL 全为占位符 → 替换为真实 Unsplash URL（格式：https://images.unsplash.com/photo-xxx?w=375&q=80）
+6. 补充 active/selected 状态样式（tab 高亮、按钮按压效果）
+7. 所有卡片加 box-shadow 和 border-radius（16-24rpx 圆角 + rgba 阴影）
 
-所有问题修复后通过 create_miniprogram_page 工具返回完整三文件（即使无改动也必须调用工具返回）。
+必须通过 create_miniprogram_page 工具返回完整 wxml + wxss + js，禁止输出任何 JSON 以外的文字。
 """.strip()
 
 
