@@ -1,0 +1,74 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-eyebrow">{{brandTagline}}</text>
+    <text class="hero-title">{{brandName}}</text>
+    <text class="hero-sub">{{heroSubText}}</text>
+  </view>
+
+  <view class="contact-grid">
+    <view class="contact-card" data-type="phone" bindtap="onContactTap">
+      <view class="contact-icon">
+        <text class="contact-icon-text">{{contactCards.phone.iconText}}</text>
+      </view>
+      <text class="contact-card-name">{{contactCards.phone.name}}</text>
+      <text class="contact-card-value">{{contactCards.phone.value}}</text>
+      <text class="contact-card-hint">{{contactCards.phone.hint}}</text>
+    </view>
+    <view class="contact-card" data-type="email" bindtap="onContactTap">
+      <view class="contact-icon">
+        <text class="contact-icon-text">{{contactCards.email.iconText}}</text>
+      </view>
+      <text class="contact-card-name">{{contactCards.email.name}}</text>
+      <text class="contact-card-value">{{contactCards.email.value}}</text>
+      <text class="contact-card-hint">{{contactCards.email.hint}}</text>
+    </view>
+    <view class="contact-card" data-type="wechat" bindtap="onContactTap">
+      <view class="contact-icon">
+        <text class="contact-icon-text">{{contactCards.wechat.iconText}}</text>
+      </view>
+      <text class="contact-card-name">{{contactCards.wechat.name}}</text>
+      <text class="contact-card-value">{{contactCards.wechat.value}}</text>
+      <text class="contact-card-hint">{{contactCards.wechat.hint}}</text>
+    </view>
+    <view class="contact-card" data-type="address" bindtap="onContactTap">
+      <view class="contact-icon">
+        <text class="contact-icon-text">{{contactCards.address.iconText}}</text>
+      </view>
+      <text class="contact-card-name">{{contactCards.address.name}}</text>
+      <text class="contact-card-value">{{contactCards.address.value}}</text>
+      <text class="contact-card-hint">{{contactCards.address.hint}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">工作时间</text>
+    <view class="hours-list">
+      <view class="hours-row" wx:for="{{hours}}" wx:key="dayText">
+        <text class="hours-day">{{item.dayText}}</text>
+        <text class="hours-time">{{item.timeText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">给我们留言</text>
+    <view class="form">
+      <view class="field">
+        <text class="label">您的称呼</text>
+        <input class="input" placeholder="请输入您的称呼" value="{{formData.name}}" bindinput="onNameInput" />
+      </view>
+      <view class="field">
+        <text class="label">联系方式</text>
+        <input class="input" placeholder="手机号或邮箱" value="{{formData.contact}}" bindinput="onContactInput" />
+      </view>
+      <view class="field">
+        <text class="label">留言内容</text>
+        <textarea class="textarea" placeholder="请简要描述您的需求或问题" value="{{formData.message}}" bindinput="onMessageInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="submit-btn" bindtap="onSubmit">提交留言</button>
+  </view>
+</view>

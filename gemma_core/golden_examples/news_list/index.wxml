@@ -1,0 +1,45 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">{{channelName}}</text>
+    <text class="header-sub">每日 {{updateTimeText}} 更新</text>
+  </view>
+
+  <scroll-view class="tab-bar" scroll-x="{{true}}">
+    <view class="tab {{currentTab === item.key ? 'tab-active' : ''}}" wx:for="{{tabs}}" wx:key="key" bindtap="onTabTap" data-key="{{item.key}}">
+      <text>{{item.name}}</text>
+      <text class="tab-count" wx:if="{{item.countText}}">{{item.countText}}</text>
+    </view>
+  </scroll-view>
+
+  <view class="featured" wx:if="{{featured}}" bindtap="onFeaturedTap">
+    <view class="featured-cover">
+      <text class="featured-cover-text">{{featured.coverText}}</text>
+    </view>
+    <view class="featured-body">
+      <text class="featured-tag">{{featured.tagText}}</text>
+      <text class="featured-title">{{featured.title}}</text>
+      <view class="featured-meta">
+        <text class="meta-source">{{featured.sourceText}}</text>
+        <text class="meta-time">{{featured.timeText}}</text>
+        <text class="meta-views">{{featured.viewCountText}} 阅读</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="article-list">
+    <view class="article {{item.coverText ? 'article-with-cover' : ''}}" wx:for="{{articles}}" wx:key="id" bindtap="onArticleTap" data-id="{{item.id}}">
+      <view class="article-body">
+        <text class="article-title">{{item.title}}</text>
+        <text class="article-summary">{{item.summaryText}}</text>
+        <view class="article-meta">
+          <text class="meta-source">{{item.sourceText}}</text>
+          <text class="meta-time">{{item.timeText}}</text>
+          <text class="meta-views">{{item.viewCountText}} 阅读</text>
+        </view>
+      </view>
+      <view class="article-cover" wx:if="{{item.coverText}}">
+        <text class="article-cover-text">{{item.coverText}}</text>
+      </view>
+    </view>
+  </view>
+</view>

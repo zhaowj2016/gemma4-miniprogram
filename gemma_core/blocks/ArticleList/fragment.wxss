@@ -1,0 +1,35 @@
+.article-list {
+  padding: 0 24rpx 28rpx;
+}
+.article-list__title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #172033;
+  margin-bottom: 18rpx;
+}
+.article-list__item {
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  margin-bottom: 16rpx;
+}
+.article-list__item-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #172033;
+}
+.article-list__item-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #5d667a;
+  line-height: 1.5;
+  margin-top: 10rpx;
+}
+.article-list__item-meta {
+  display: block;
+  font-size: 22rpx;
+  color: #9aa3b5;
+  margin-top: 12rpx;
+}

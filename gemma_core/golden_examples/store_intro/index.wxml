@@ -1,0 +1,64 @@
+<view class="container">
+  <swiper class="banner" indicator-dots="{{true}}" autoplay="{{true}}" interval="4000" current="{{bannerIndex}}" bindchange="onBannerChange">
+    <swiper-item wx:for="{{banners}}" wx:key="*this">
+      <view class="banner-slide">
+        <text class="banner-text">{{item}}</text>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <view class="info-card">
+    <text class="store-name">{{storeName}}</text>
+    <view class="meta-row">
+      <text class="meta-rating">★ {{ratingText}}</text>
+      <text class="meta-price">人均 ¥{{avgPriceText}}</text>
+      <text class="meta-cat">{{categoryText}}</text>
+    </view>
+    <view class="address-row">
+      <text class="address-text">{{addressText}}</text>
+    </view>
+    <view class="action-row">
+      <view class="action-btn" bindtap="onCallTap">
+        <text class="action-btn-text">电话</text>
+      </view>
+      <view class="action-btn" bindtap="onMapTap">
+        <text class="action-btn-text">地图</text>
+      </view>
+      <view class="action-btn" bindtap="onShareTap">
+        <text class="action-btn-text">分享</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">店铺特色</text>
+    <view class="feature-list">
+      <view class="feature-item" wx:for="{{features}}" wx:key="*this">
+        <text class="feature-dot">·</text>
+        <text class="feature-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">营业时间</text>
+    <view class="hours-list">
+      <view class="hours-row" wx:for="{{hours}}" wx:key="dayText">
+        <text class="hours-day">{{item.dayText}}</text>
+        <text class="hours-time">{{item.timeText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">顾客评价</text>
+    <view class="review-card" wx:for="{{reviews}}" wx:key="id">
+      <view class="review-head">
+        <text class="review-name">{{item.name}}</text>
+        <text class="review-rating">★ {{item.ratingText}}</text>
+      </view>
+      <text class="review-text">{{item.text}}</text>
+      <text class="review-date">{{item.dateText}}</text>
+    </view>
+  </view>
+</view>

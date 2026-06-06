@@ -1,0 +1,12 @@
+{
+  "name": "StickyBottomBar",
+  "description": "Fixed bottom action bar for checkout, signup, or continuation.",
+  "keywords": ["sticky", "bottom", "bar", "action", "cta", "footer", "底栏", "底部", "按钮", "购买", "提交"],
+  "requiredData": ["stickyBottomBarTitle", "stickyBottomBarDesc", "stickyBottomBarButtonText"],
+  "allowedComponents": ["view", "text", "button"],
+  "defaultData": {
+    "stickyBottomBarTitle": "Ready to continue",
+    "stickyBottomBarDesc": "Mock action only",
+    "stickyBottomBarButtonText": "Continue"
+  }
+}

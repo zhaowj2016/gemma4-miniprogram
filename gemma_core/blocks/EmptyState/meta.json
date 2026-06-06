@@ -1,0 +1,12 @@
+{
+  "name": "EmptyState",
+  "description": "Empty result panel with local button state.",
+  "keywords": ["empty", "blank", "none", "placeholder", "no result", "空", "暂无", "空状态", "占位"],
+  "requiredData": ["emptyStateTitle", "emptyStateDesc", "emptyStateButtonText"],
+  "allowedComponents": ["view", "text", "button"],
+  "defaultData": {
+    "emptyStateTitle": "Nothing here yet",
+    "emptyStateDesc": "Use this block when lists or searches have no local mock results.",
+    "emptyStateButtonText": "Refresh mock"
+  }
+}

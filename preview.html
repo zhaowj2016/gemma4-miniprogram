@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif; background-color: #f7f7f7; }
+page { 
+  --primary: #007AFF; 
+  --primary-light: #E5F1FF;
+  --bg-color: #F5F7FA;
+  --surface: #FFFFFF;
+  --text-main: #1A1A1A;
+  --text-sub: #8E8E93;
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 18px;
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-md: 0 6px 16px rgba(0,0,0,0.08);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  
+  background-color: var(--bg-color); 
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  font-size: 14px; 
+  color: var(--text-main); 
+  box-sizing: border-box;
+}
+
+/* 核心布局基类 */
+.flex-row { display: flex; flex-direction: row; align-items: center; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-center { display: flex; justify-content: center; align-items: center; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+/* 现代 UI 组件基类 */
+.card {
+  background: var(--surface);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 20px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%);
+  color: #fff;
+  border-radius: var(--border-radius-lg);
+  padding: 12px 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+  transition: opacity 0.2s;
+}
+.btn-primary:active { opacity: 0.8; }
+
+.text-title { font-size: 18px; font-weight: bold; color: var(--text-main); margin-bottom: 6px; }
+.text-desc { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+
+.page-container {
+          background-color: var(--bg-color);
+          min-height: 100vh;
+          padding: 15px;
+          box-sizing: border-box;
+        }
+        .header {
+          padding: 20px;
+          margin-bottom: 20px;
+          border-radius: 15px;
+          background: rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(10px);
+        }
+        .streak-badge {
+          background: linear-gradient(135deg, var(--primary), #ff7e5f);
+          color: white;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .streak-num {
+          font-size: 16px;
+          font-weight: bold;
+        }
+        .streak-label {
+          font-size: 10px;
+        }
+        .section-title-row {
+          margin-bottom: 15px;
+          padding: 0 5px;
+        }
+        .habit-grid {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+        }
+        .habit-card {
+          width: 31%;
+          margin-bottom: 10px;
+          padding: 10px 0;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+          border: 1px solid transparent;
+        }
+        .habit-card.completed {
+          background-color: #f0fff4;
+          border-color: #c6f6d5;
+        }
+        .icon-box {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          margin-bottom: 8px;
+        }
+        .habit-name {
+          font-size: 12px;
+          font-weight: 500;
+          margin-bottom: 6px;
+          color: #333;
+        }
+        .habit-status {
+          margin-bottom: 8px;
+        }
+        .status-text {
+          font-size: 10px;
+          color: #999;
+        }
+        .check-btn {
+          font-size: 11px;
+          padding: 0 10px;
+          height: 25px;
+          line-height: 25px;
+          border-radius: 12px;
+          margin: 0;
+        }
+        .btn-todo {
+          background: var(--primary);
+          color: white;
+        }
+        .btn-done {
+          background: #e2e8f0;
+          color: #718096;
+        }
+        .footer-action {
+          margin-top: 30px;
+          padding-bottom: 30px;
+        }
+</style>
+</head>
+<body>
+<div style="max-width: 400px; margin: 0 auto; background: white; min-height: 100vh; position: relative;">
+<div scroll-y class="page-container">
+          <div class="header glass-card flex-between flex-row">
+            <div class="user-info flex-col">
+              <span class="text-title">{{userInfo.name}}</span>
+              <span class="text-desc">等级 {{userInfo.level}} · {{userInfo.points}} 积分</span>
+            </div>
+            <div class="streak-badge flex-center flex-col">
+              <span class="streak-num">{{summary.currentStreak}}</span>
+              <span class="streak-label">天连胜</span>
+            </div>
+          </div>
+
+          <div class="section-title-row flex-between flex-row">
+            <span class="text-title">今日打卡</span>
+            <span class="text-desc">{{summary.completionRate}} 完成率</span>
+          </div>
+
+          <div class="habit-grid">
+            <div wx:for="{{habits}}" wx:key="id">
+              <div class="habit-card card {{item.isCompleted ? 'completed' : ''}} flex-col flex-center">
+                <div class="icon-box" style="background-color: {{item.iconColor}}"></div>
+                <span class="habit-name">{{item.name}}</span>
+                <div class="habit-status flex-center">
+                  <span class="status-text">{{item.isCompleted ? '已完成' : '待打卡'}}</span>
+                </div>
+                <button class="check-btn {{item.isCompleted ? 'btn-done' : 'btn-todo'}}" bindtap="toggleCheck" data-id="{{item.id}}">
+                  {{item.isCompleted ? '✓' : '打卡'}}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-action flex-center">
+            <button class="btn-primary">添加新习惯</button>
+          </div>
+        </div>
+</div>
+</body>
+</html>

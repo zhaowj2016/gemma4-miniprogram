@@ -1,0 +1,15 @@
+{
+  "name": "ProductList",
+  "description": "Two-column product card list with local mock items.",
+  "keywords": ["product", "list", "grid", "goods", "catalog", "列表", "商品", "产品", "卡片"],
+  "requiredData": ["productListTitle", "productListSubtitle", "productListItems"],
+  "allowedComponents": ["view", "text"],
+  "defaultData": {
+    "productListTitle": "Recommended products",
+    "productListSubtitle": "Local mock",
+    "productListItems": [
+      {"id": "p1", "name": "Starter Kit", "desc": "Core tools for a clean page.", "priceText": "129.00"},
+      {"id": "p2", "name": "Growth Pack", "desc": "Cards, forms, and actions.", "priceText": "259.00"}
+    ]
+  }
+}

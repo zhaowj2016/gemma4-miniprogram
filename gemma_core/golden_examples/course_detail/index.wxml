@@ -1,0 +1,92 @@
+<view class="container">
+  <view class="cover">
+    <text class="cover-eyebrow">{{categoryText}}</text>
+    <text class="cover-title">{{courseName}}</text>
+    <view class="cover-meta">
+      <text class="meta-item">{{studentCountText}} 人已报名</text>
+      <text class="meta-divider">·</text>
+      <text class="meta-item">评分 {{ratingText}}</text>
+    </view>
+  </view>
+
+  <view class="info-row">
+    <view class="info-item">
+      <text class="info-value">¥{{priceText}}</text>
+      <text class="info-label">课程价格</text>
+    </view>
+    <view class="info-divider"></view>
+    <view class="info-item">
+      <text class="info-value">{{lessonCountText}}</text>
+      <text class="info-label">课时数</text>
+    </view>
+    <view class="info-divider"></view>
+    <view class="info-item">
+      <text class="info-value">{{durationText}}</text>
+      <text class="info-label">总时长(周)</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">课程介绍</text>
+    <text class="section-text">{{introText}}</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">你将学到</text>
+    <view class="learn-list">
+      <view class="learn-item" wx:for="{{learnPoints}}" wx:key="*this">
+        <text class="learn-bullet">✓</text>
+        <text class="learn-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">课程大纲</text>
+    <view class="outline-list">
+      <view class="outline-row" wx:for="{{outline}}" wx:key="indexText">
+        <text class="outline-index">{{item.indexText}}</text>
+        <view class="outline-body">
+          <text class="outline-title">{{item.title}}</text>
+          <text class="outline-desc">{{item.descText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">主讲老师</text>
+    <view class="teacher-card">
+      <view class="teacher-avatar">
+        <text class="teacher-avatar-text">{{teacher.avatarText}}</text>
+      </view>
+      <view class="teacher-info">
+        <text class="teacher-name">{{teacher.name}}</text>
+        <text class="teacher-title">{{teacher.titleText}}</text>
+        <text class="teacher-bio">{{teacher.bioText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">学员评价</text>
+    <view class="comment-list">
+      <view class="comment-card" wx:for="{{comments}}" wx:key="id">
+        <view class="comment-head">
+          <text class="comment-name">{{item.name}}</text>
+          <text class="comment-rating">★ {{item.ratingText}}</text>
+        </view>
+        <text class="comment-text">{{item.text}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <view class="footer-fav" bindtap="onFavTap">
+      <text class="footer-fav-text {{isFavorited ? 'footer-fav-text-active' : ''}}">{{isFavorited ? '已收藏' : '收藏'}}</text>
+    </view>
+    <view class="footer-enroll" bindtap="onEnrollTap">
+      <text class="footer-enroll-text">立即报名</text>
+    </view>
+  </view>
+</view>

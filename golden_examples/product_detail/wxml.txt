@@ -1,0 +1,20 @@
+<view class="container">
+  <swiper class="banner" indicator-dots="true" autoplay="true" interval="3000">
+    <swiper-item>
+      <image class="banner-image" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" mode="aspectFill"></image>
+    </swiper-item>
+  </swiper>
+  <view class="info-section">
+    <text class="price">￥299.00</text>
+    <text class="title">智能声控降噪运动耳机</text>
+    <text class="subtitle">超长续航 | HIFI音质 | 蓝牙5.3 | 智能触控</text>
+  </view>
+  <view class="detail-section">
+    <text class="section-title">商品详情</text>
+    <text class="detail-text">这是智能降噪运动耳机的详细介绍，带给你无与伦比的绝妙音质享受，超长待机长达48小时，随时随地开启你的音乐旅程。</text>
+  </view>
+  <view class="action-bar">
+    <button class="cart-btn" bindtap="addToCart">加入购物车</button>
+    <button class="buy-btn" bindtap="buyNow">立即购买</button>
+  </view>
+</view>

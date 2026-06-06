@@ -1,0 +1,97 @@
+[
+  {
+    "name": "product_detail",
+    "description": "商品详情页: 顶部轮播, 价格, 标签, 描述, 底部加购按钮",
+    "keywords": ["商品", "详情", "购买", "价格", "product", "detail", "商城", "加购", "购物车", "电商"]
+  },
+  {
+    "name": "signup_form",
+    "description": "活动报名表单: 姓名 + 手机号, 含错误提示, 底部提交",
+    "keywords": ["报名", "表单", "活动", "signup", "form", "姓名", "手机号", "提交", "注册"]
+  },
+  {
+    "name": "product_list",
+    "description": "商品列表页: 横滑分类筛选 + 双列商品卡片网格",
+    "keywords": ["商品列表", "商品", "列表", "商城", "products", "list", "grid", "货架", "分类", "筛选"]
+  },
+  {
+    "name": "booking_form",
+    "description": "服务预约表单: 服务头部 + 日期横滑 + 时段网格 + 联系人 + 备注",
+    "keywords": ["预约", "预订", "服务", "booking", "reservation", "日期", "时段", "下单", "档期"]
+  },
+  {
+    "name": "store_intro",
+    "description": "门店介绍页: 顶部轮播 + 关键信息卡 + 特色列表 + 营业时间 + 用户评价",
+    "keywords": ["门店", "店铺", "介绍", "store", "shop", "评分", "地址", "营业时间", "评价"]
+  },
+  {
+    "name": "corporate_homepage",
+    "description": "企业官网首页: 大 hero + 核心服务网格 + 关于 + 客户列表 + 底部 CTA",
+    "keywords": ["企业", "官网", "首页", "corporate", "homepage", "公司", "服务", "客户", "landing"]
+  },
+  {
+    "name": "course_detail",
+    "description": "课程详情页: 顶部封面 + 价格/课时信息条 + 介绍 + 大纲 + 主讲老师 + 评价 + 报名",
+    "keywords": ["课程", "详情", "教学", "course", "lesson", "课时", "大纲", "老师", "报名", "学习"]
+  },
+  {
+    "name": "news_list",
+    "description": "图文资讯列表: 分类 tab + 头条大卡 + 列表卡(部分带封面)",
+    "keywords": ["资讯", "新闻", "列表", "news", "list", "文章", "feed", "头条", "媒体"]
+  },
+  {
+    "name": "news_detail",
+    "description": "图文详情页: 标签 + 标题 + 多段正文 + 引用块 + 操作 + 相关推荐 + 评论区 + 底部输入",
+    "keywords": ["资讯", "新闻", "详情", "文章", "news", "article", "detail", "评论", "正文"]
+  },
+  {
+    "name": "profile",
+    "description": "个人中心: 渐变用户卡 + 关注/粉丝/获赞/收藏统计 + 我的订单入口 + 设置菜单",
+    "keywords": ["个人中心", "我的", "profile", "用户", "会员", "VIP", "订单", "设置"]
+  },
+  {
+    "name": "order_list",
+    "description": "订单列表: 顶部状态 tab + 订单卡(店铺, 商品, 状态, 操作按钮)",
+    "keywords": ["订单", "列表", "order", "list", "待付款", "待发货", "待收货", "我的订单"]
+  },
+  {
+    "name": "coupon_claim",
+    "description": "优惠券领取中心: 多张渐变色券卡(金额 + 条件 + 领取按钮) + 规则区",
+    "keywords": ["优惠券", "领券", "券", "coupon", "claim", "领取", "折扣", "优惠"]
+  },
+  {
+    "name": "service_pricing",
+    "description": "服务报价页: 月/年切换 + 多档套餐卡(高亮推荐) + FAQ",
+    "keywords": ["报价", "套餐", "价格", "pricing", "plan", "订阅", "会员", "年付", "月付"]
+  },
+  {
+    "name": "job_posting",
+    "description": "招聘岗位页: 部门/标题/标签 hero + 关键信息 + 职责/要求/福利/团队 + 投递 CTA",
+    "keywords": ["招聘", "岗位", "job", "hiring", "求职", "JD", "职责", "要求", "福利", "投递"]
+  },
+  {
+    "name": "real_estate",
+    "description": "房源展示列表: 筛选 chip + 房源大卡(封面, 房型, 标签, 总价, 单价, 周边)",
+    "keywords": ["房源", "二手房", "楼盘", "real estate", "property", "house", "公寓", "学区", "地铁"]
+  },
+  {
+    "name": "restaurant_menu",
+    "description": "餐饮菜单: 左侧分类栏 + 右侧菜品列表(图片, 描述, 加减号购物车) + 底部购物车",
+    "keywords": ["餐饮", "菜单", "点餐", "menu", "dish", "菜品", "点菜", "餐厅", "美食"]
+  },
+  {
+    "name": "portfolio",
+    "description": "作品集: 设计师 hero + 分类 tab + 作品网格(其中一张大图) + 服务流程 + 邀请合作 CTA",
+    "keywords": ["作品集", "作品", "portfolio", "设计师", "案例", "showcase", "项目"]
+  },
+  {
+    "name": "survey",
+    "description": "问卷收集: 顶部进度 + 单选/多选/文本三种题型混排 + 上下题切换 + 末题提交",
+    "keywords": ["问卷", "调查", "survey", "form", "题目", "反馈", "调研", "满意度"]
+  },
+  {
+    "name": "contact_us",
+    "description": "联系我们: hero + 4 宫格联系方式(电话/邮箱/微信/地址) + 工作时间 + 留言表单",
+    "keywords": ["联系", "联系我们", "contact", "客服", "电话", "邮箱", "地址", "留言"]
+  }
+]

@@ -1,0 +1,59 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-eyebrow">{{heroEyebrow}}</text>
+    <text class="hero-title">{{heroTitle}}</text>
+    <text class="hero-sub">{{heroSubText}}</text>
+    <view class="hero-actions">
+      <view class="hero-btn-primary" bindtap="onPrimaryTap">
+        <text class="hero-btn-text">{{primaryBtnText}}</text>
+      </view>
+      <view class="hero-btn-secondary" bindtap="onSecondaryTap">
+        <text class="hero-btn-text-secondary">{{secondaryBtnText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-eyebrow">核心服务</text>
+    <text class="section-title">{{servicesTitle}}</text>
+    <view class="service-grid">
+      <view class="service-card" wx:for="{{services}}" wx:key="title" bindtap="onServiceTap" data-index="{{index}}">
+        <view class="service-icon">
+          <text class="service-icon-text">{{item.iconText}}</text>
+        </view>
+        <text class="service-title">{{item.title}}</text>
+        <text class="service-desc">{{item.descText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-eyebrow">关于 {{brandShortName}}</text>
+    <text class="section-title">{{aboutTitle}}</text>
+    <text class="about-text">{{aboutText}}</text>
+    <view class="stat-row">
+      <view class="stat-item" wx:for="{{stats}}" wx:key="label">
+        <text class="stat-value">{{item.valueText}}</text>
+        <text class="stat-label">{{item.labelText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-eyebrow">合作客户</text>
+    <text class="section-title">{{clientsTitle}}</text>
+    <view class="client-list">
+      <view class="client-item" wx:for="{{clients}}" wx:key="*this">
+        <text class="client-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="cta">
+    <text class="cta-title">{{ctaTitle}}</text>
+    <text class="cta-sub">{{ctaSubText}}</text>
+    <view class="cta-btn" bindtap="onContactTap">
+      <text class="cta-btn-text">联系我们</text>
+    </view>
+  </view>
+</view>

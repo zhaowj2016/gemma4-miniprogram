@@ -1,0 +1,16 @@
+{
+  "name": "SignupForm",
+  "description": "Local signup or booking form with input handlers.",
+  "keywords": ["signup", "form", "booking", "reserve", "lead", "报名", "表单", "预约", "登记"],
+  "requiredData": ["signupFormTitle", "signupFormDesc", "signupFormName", "signupFormPhone", "signupFormNamePlaceholder", "signupFormPhonePlaceholder", "signupFormButtonText"],
+  "allowedComponents": ["view", "text", "form", "input", "button"],
+  "defaultData": {
+    "signupFormTitle": "Reserve a seat",
+    "signupFormDesc": "Form values stay local and mocked for validation.",
+    "signupFormName": "",
+    "signupFormPhone": "",
+    "signupFormNamePlaceholder": "Your name",
+    "signupFormPhonePlaceholder": "Phone number",
+    "signupFormButtonText": "Submit"
+  }
+}

@@ -1,0 +1,49 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">{{title}}</text>
+    <text class="header-sub">{{subtitleText}}</text>
+  </view>
+
+  <view class="toggle-row">
+    <view class="toggle {{billing === 'month' ? 'toggle-active' : ''}}" data-mode="month" bindtap="onToggleTap">
+      <text class="toggle-text">按月付</text>
+    </view>
+    <view class="toggle {{billing === 'year' ? 'toggle-active' : ''}}" data-mode="year" bindtap="onToggleTap">
+      <text class="toggle-text">按年付</text>
+      <text class="toggle-tag">省 20%</text>
+    </view>
+  </view>
+
+  <view class="plan-list">
+    <view class="plan-card {{item.recommended ? 'plan-card-featured' : ''}}" wx:for="{{plans}}" wx:key="id">
+      <view class="plan-tag" wx:if="{{item.recommended}}">{{item.recommendedText}}</view>
+      <text class="plan-name">{{item.name}}</text>
+      <text class="plan-desc">{{item.descText}}</text>
+      <view class="plan-price-row">
+        <text class="plan-currency">¥</text>
+        <text class="plan-price">{{item.priceText}}</text>
+        <text class="plan-cycle">/{{item.cycleText}}</text>
+      </view>
+      <text class="plan-original" wx:if="{{item.originalText}}">原价 ¥{{item.originalText}}</text>
+      <view class="plan-feature-list">
+        <view class="plan-feature-item" wx:for="{{item.features}}" wx:for-item="feat" wx:key="*this">
+          <text class="plan-feature-bullet">✓</text>
+          <text class="plan-feature-text">{{feat}}</text>
+        </view>
+      </view>
+      <view class="plan-btn {{item.recommended ? 'plan-btn-primary' : 'plan-btn-ghost'}}" data-id="{{item.id}}" bindtap="onChooseTap">
+        <text class="plan-btn-text">{{item.btnText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="faq-section">
+    <text class="faq-title">常见问题</text>
+    <view class="faq-list">
+      <view class="faq-item" wx:for="{{faqs}}" wx:key="id">
+        <text class="faq-q">Q. {{item.q}}</text>
+        <text class="faq-a">A. {{item.a}}</text>
+      </view>
+    </view>
+  </view>
+</view>

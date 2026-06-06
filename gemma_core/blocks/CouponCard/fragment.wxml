@@ -1,0 +1,11 @@
+<view class="coupon-card">
+  <view class="coupon-card__left">
+    <text class="coupon-card__amount">{{couponCardAmountText}}</text>
+    <text class="coupon-card__condition">{{couponCardCondition}}</text>
+  </view>
+  <view class="coupon-card__right">
+    <text class="coupon-card__title">{{couponCardTitle}}</text>
+    <text class="coupon-card__date">{{couponCardDate}}</text>
+    <button class="coupon-card__button" bindtap="onCouponCardClaim">{{couponCardButtonText}}</button>
+  </view>
+</view>

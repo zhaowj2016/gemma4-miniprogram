@@ -1,0 +1,61 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-eyebrow">{{specialtyText}}</text>
+    <text class="hero-name">{{designerName}}</text>
+    <text class="hero-tagline">{{taglineText}}</text>
+    <view class="hero-stat-row">
+      <view class="hero-stat">
+        <text class="hero-stat-value">{{projectCountText}}</text>
+        <text class="hero-stat-label">代表作品</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-value">{{clientCountText}}</text>
+        <text class="hero-stat-label">合作客户</text>
+      </view>
+      <view class="hero-stat">
+        <text class="hero-stat-value">{{awardCountText}}</text>
+        <text class="hero-stat-label">获奖</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tab-bar">
+    <view class="tab {{currentCategory === item.key ? 'tab-active' : ''}}" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="onCategoryTap">
+      <text class="tab-text">{{item.name}}</text>
+    </view>
+  </view>
+
+  <view class="work-grid">
+    <view class="work-card {{item.featured ? 'work-card-tall' : ''}}" wx:for="{{works}}" wx:key="id" data-id="{{item.id}}" bindtap="onWorkTap">
+      <view class="work-cover" style="background: {{item.coverColor}};">
+        <text class="work-cover-text">{{item.coverText}}</text>
+      </view>
+      <view class="work-body">
+        <text class="work-title">{{item.title}}</text>
+        <text class="work-sub">{{item.subText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">服务流程</text>
+    <view class="process-list">
+      <view class="process-row" wx:for="{{process}}" wx:key="indexText">
+        <text class="process-index">{{item.indexText}}</text>
+        <view class="process-body">
+          <text class="process-name">{{item.name}}</text>
+          <text class="process-desc">{{item.descText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <view class="footer-msg" bindtap="onMsgTap">
+      <text class="footer-msg-text">私信咨询</text>
+    </view>
+    <view class="footer-hire" bindtap="onHireTap">
+      <text class="footer-hire-text">邀请合作</text>
+    </view>
+  </view>
+</view>

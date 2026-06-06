@@ -1,0 +1,33 @@
+.hero-banner {
+  padding: 24rpx;
+}
+.hero-banner__swiper {
+  height: 360rpx;
+  border-radius: 28rpx;
+  overflow: hidden;
+}
+.hero-banner__slide {
+  height: 360rpx;
+  padding: 48rpx 40rpx;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #1f6feb, #11a37f);
+  color: #ffffff;
+}
+.hero-banner__eyebrow {
+  display: block;
+  font-size: 24rpx;
+  opacity: 0.86;
+  margin-bottom: 18rpx;
+}
+.hero-banner__title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
+}
+.hero-banner__desc {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.5;
+  opacity: 0.9;
+}

@@ -1,0 +1,45 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">{{title}}</text>
+    <text class="header-sub">{{subtitleText}}</text>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{progressText}};"></view>
+    </view>
+    <text class="progress-text">{{progressText}} · 第 {{currentIndexText}} / {{totalText}} 题</text>
+  </view>
+
+  <view class="question-card">
+    <text class="question-label">第 {{currentIndexText}} 题</text>
+    <text class="question-title">{{currentQuestion.title}}</text>
+    <text class="question-required" wx:if="{{currentQuestion.required}}">*必填</text>
+
+    <view class="options" wx:if="{{currentQuestion.type === 'single'}}">
+      <view class="option {{currentAnswer === item ? 'option-active' : ''}}" wx:for="{{currentQuestion.options}}" wx:key="*this" data-value="{{item}}" bindtap="onSingleSelect">
+        <view class="option-radio">
+          <view class="option-radio-inner {{currentAnswer === item ? 'option-radio-inner-active' : ''}}"></view>
+        </view>
+        <text class="option-text">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="options" wx:if="{{currentQuestion.type === 'multi'}}">
+      <view class="option {{multiAnswerMap[item] ? 'option-active' : ''}}" wx:for="{{currentQuestion.options}}" wx:key="*this" data-value="{{item}}" bindtap="onMultiSelect">
+        <view class="option-check">
+          <text class="option-check-text {{multiAnswerMap[item] ? 'option-check-text-active' : ''}}">✓</text>
+        </view>
+        <text class="option-text">{{item}}</text>
+      </view>
+    </view>
+
+    <textarea wx:if="{{currentQuestion.type === 'text'}}" class="question-textarea" placeholder="请输入您的回答" value="{{currentAnswer}}" bindinput="onTextInput" />
+  </view>
+
+  <view class="footer">
+    <view class="footer-prev" bindtap="onPrevTap">
+      <text class="footer-prev-text">上一题</text>
+    </view>
+    <view class="footer-next" bindtap="onNextTap">
+      <text class="footer-next-text">{{isLast ? '提交问卷' : '下一题'}}</text>
+    </view>
+  </view>
+</view>

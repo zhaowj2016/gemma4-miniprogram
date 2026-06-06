@@ -1,0 +1,16 @@
+{
+  "name": "gemma_match",
+  "version": "1.0.0",
+  "description": "用户输入自然语言 → Gemma 生成三段式代码 → 系统合并固定脚手架 → 静态校验 → （可选一次自愈）→ 打包 Zip → 用户下载。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "miniprogram-ci": "^2.1.31"
+  }
+}

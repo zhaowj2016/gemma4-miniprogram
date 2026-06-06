@@ -1,0 +1,173 @@
+.container {
+  padding-bottom: 40rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+}
+
+.header {
+  padding: 32rpx 24rpx 16rpx;
+  background-color: #ffffff;
+}
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+.header-sub {
+  display: block;
+  font-size: 24rpx;
+  color: #888888;
+}
+
+/* 筛选 chip */
+.filter-row {
+  display: flex;
+  padding: 16rpx 24rpx;
+  background-color: #ffffff;
+  border-bottom: 1rpx solid #eeeeee;
+  overflow-x: scroll;
+}
+.filter-chip {
+  flex-shrink: 0;
+  height: 56rpx;
+  line-height: 56rpx;
+  padding: 0 24rpx;
+  margin-right: 16rpx;
+  background-color: #f5f6f8;
+  border-radius: 28rpx;
+}
+.filter-chip-active {
+  background-color: #eef3ff;
+}
+.filter-chip-text {
+  font-size: 26rpx;
+  color: #555555;
+}
+.filter-chip-active .filter-chip-text {
+  color: #3a6df0;
+  font-weight: 500;
+}
+
+/* 房源卡 */
+.property-list {
+  padding: 16rpx 24rpx;
+}
+.property-card {
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+}
+.property-cover {
+  position: relative;
+  width: 100%;
+  height: 420rpx;
+  background: linear-gradient(135deg, #6a8dff, #9b7bff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.property-cover-text {
+  color: #ffffff;
+  font-size: 28rpx;
+  letter-spacing: 4rpx;
+}
+.property-tag {
+  position: absolute;
+  top: 20rpx;
+  left: 20rpx;
+  background-color: #e31d1a;
+  color: #ffffff;
+  font-size: 22rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 6rpx;
+}
+.property-photo-count {
+  position: absolute;
+  bottom: 16rpx;
+  right: 16rpx;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 4rpx;
+  padding: 4rpx 12rpx;
+}
+.property-photo-count-text {
+  color: #ffffff;
+  font-size: 22rpx;
+}
+
+.property-body {
+  padding: 24rpx 28rpx 28rpx;
+}
+.property-title-row {
+  margin-bottom: 12rpx;
+}
+.property-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+.property-feature-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.property-feature {
+  font-size: 26rpx;
+  color: #555555;
+}
+.property-feature-divider {
+  margin: 0 12rpx;
+  color: #cccccc;
+}
+.property-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 20rpx;
+}
+.property-tag-item {
+  font-size: 22rpx;
+  color: #777777;
+  background-color: #f5f6f8;
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  margin-right: 10rpx;
+  margin-bottom: 6rpx;
+}
+.property-bottom-row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 8rpx;
+}
+.property-price-block {
+  display: flex;
+  align-items: baseline;
+  margin-right: 20rpx;
+}
+.property-price-num {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #e31d1a;
+  line-height: 1;
+}
+.property-price-unit {
+  font-size: 24rpx;
+  color: #e31d1a;
+  margin-left: 6rpx;
+}
+.property-price-per {
+  font-size: 22rpx;
+  color: #888888;
+}
+.property-meta-row {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #888888;
+}
+.property-meta-divider {
+  margin: 0 10rpx;
+  color: #cccccc;
+}

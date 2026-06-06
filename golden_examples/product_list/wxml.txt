@@ -1,0 +1,15 @@
+<view class="container">
+  <view class="search-bar">
+    <input class="search-input" placeholder="输入搜索商品关键词" bindinput="onSearchInput" />
+  </view>
+  <scroll-view class="list-container" scroll-y="true">
+    <view class="product-item" wx:for="{{products}}" wx:key="id" bindtap="onProductTap" data-id="{{item.id}}">
+      <image class="product-img" src="{{item.image}}" mode="aspectFill"></image>
+      <view class="product-info">
+        <text class="product-name">{{item.name}}</text>
+        <text class="product-price">￥{{item.price}}</text>
+        <text class="product-sales">已售 {{item.sales}} 件</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

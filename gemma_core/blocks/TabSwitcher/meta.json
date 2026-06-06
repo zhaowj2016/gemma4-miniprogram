@@ -1,0 +1,16 @@
+{
+  "name": "TabSwitcher",
+  "description": "Segmented tab switcher for detail pages and dashboards.",
+  "keywords": ["tab", "switch", "segment", "category", "tabs", "切换", "标签", "分类"],
+  "requiredData": ["tabSwitcherTabs", "tabSwitcherActiveTitle", "tabSwitcherActiveDesc"],
+  "allowedComponents": ["view", "text"],
+  "defaultData": {
+    "tabSwitcherTabs": [
+      {"id": "overview", "label": "Overview"},
+      {"id": "details", "label": "Details"},
+      {"id": "faq", "label": "FAQ"}
+    ],
+    "tabSwitcherActiveTitle": "Overview",
+    "tabSwitcherActiveDesc": "Segmented local state without remote APIs."
+  }
+}

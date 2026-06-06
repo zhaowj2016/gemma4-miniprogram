@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="tab-bar">
+    <view class="tab {{currentTab === item.key ? 'tab-active' : ''}}" wx:for="{{tabs}}" wx:key="key" bindtap="onTabTap" data-key="{{item.key}}">
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+
+  <view class="order-list">
+    <view class="order-card" wx:for="{{orders}}" wx:key="id">
+      <view class="order-head">
+        <text class="order-shop">{{item.shopName}}</text>
+        <text class="order-status {{item.statusClass}}">{{item.statusText}}</text>
+      </view>
+
+      <view class="order-goods">
+        <view class="goods-cover">
+          <text class="goods-cover-text">{{item.coverText}}</text>
+        </view>
+        <view class="goods-info">
+          <text class="goods-title">{{item.goodsTitle}}</text>
+          <text class="goods-spec">{{item.specText}}</text>
+          <view class="goods-price-row">
+            <text class="goods-price">¥{{item.priceText}}</text>
+            <text class="goods-qty">x{{item.qtyText}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="order-total">
+        <text class="total-label">共 {{item.qtyText}} 件商品, 实付:</text>
+        <text class="total-amount">¥{{item.totalText}}</text>
+      </view>
+
+      <view class="order-actions">
+        <view class="action-btn-ghost" wx:if="{{item.showCancel}}" data-id="{{item.id}}" bindtap="onCancelTap">
+          <text class="action-btn-ghost-text">取消订单</text>
+        </view>
+        <view class="action-btn-ghost" data-id="{{item.id}}" bindtap="onTrackTap">
+          <text class="action-btn-ghost-text">查看物流</text>
+        </view>
+        <view class="action-btn-primary" data-id="{{item.id}}" bindtap="onActionTap">
+          <text class="action-btn-primary-text">{{item.actionText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
