@@ -138,6 +138,34 @@ if st.session_state.page_files:
             "或在 project.config.json 中将 `touristappid` 替换为真实 AppID。"
         )
 
+    # WeChat preview QR code
+    st.markdown("---")
+    with st.expander("📱 一键生成微信预览二维码（需要 AppID + 私钥）"):
+        st.caption(
+            "填入小程序 AppID 和在微信公众平台下载的私钥内容，"
+            "点击按钮即可生成可用手机扫码预览的二维码。"
+        )
+        wechat_appid = st.text_input("AppID", placeholder="wxxxxxxxxxxxxxxxe")
+        wechat_key = st.text_area(
+            "私钥内容（粘贴 private.xxx.key 文件内容）",
+            height=120,
+            placeholder="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----",
+        )
+        if st.button("🔳 生成微信预览二维码", type="primary", use_container_width=True):
+            if not wechat_appid.strip():
+                st.error("请填写 AppID")
+            elif not wechat_key.strip():
+                st.error("请粘贴私钥内容")
+            else:
+                with st.spinner("正在上传到微信服务器，生成预览二维码..."):
+                    try:
+                        from ci_deployer import deploy_to_wechat
+                        qr_path = deploy_to_wechat(page_files, wechat_appid.strip(), wechat_key.strip())
+                        st.success("✅ 预览二维码生成成功！用微信扫码即可在手机上预览。")
+                        st.image(qr_path, width=240)
+                    except Exception as e:
+                        st.error(f"上传失败：{e}")
+
     if st.button("🔄 重新开始", type="secondary"):
         st.session_state.page_files = None
         st.session_state.used_fallback = False
