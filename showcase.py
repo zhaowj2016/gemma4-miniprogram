@@ -17,7 +17,8 @@ from render_wxml import render_phone_html
 
 SHOWCASE = [
     ("ai_wedding_studio",    "💍 AI婚礼工作室"),
-    ("michelin_restaurant",  "🍽️ 高端餐厅点餐"),
+    ("michelin_restaurant",  "🍽️ 米其林餐厅"),
+    ("coffee_shop",          "☕ 咖啡点单"),
     ("restaurant_menu",      "🍜 餐厅点餐"),
     ("profile",              "👤 个人中心"),
     ("course_detail",        "📚 课程详情"),

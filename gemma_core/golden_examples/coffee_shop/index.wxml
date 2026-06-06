@@ -1,0 +1,102 @@
+<view class="page-container">
+  <!-- 顶部店铺信息 -->
+  <view class="shop-header">
+    <view class="shop-info">
+      <text class="shop-name">{{shopInfo.name}}</text>
+      <text class="shop-slogan">{{shopInfo.slogan}}</text>
+      <view class="shop-meta">
+        <text class="meta-item">⭐ {{shopInfo.rating}}</text>
+        <text class="meta-item">⏱ {{shopInfo.deliveryTime}}</text>
+        <text class="meta-item">📍 {{shopInfo.address}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 顶部 Banner 轮播 -->
+  <swiper class="main-banner" indicator-dots="true" circular="true" current="{{swiperCurrent}}" bindchange="onSwiperChange">
+    <block wx:for="{{banners}}" wx:key="id">
+      <swiper-item>
+        <view class="banner-item">
+          <image src="{{item.image}}" mode="aspectFill" class="banner-img"></image>
+          <view class="banner-mask"></view>
+          <view class="banner-content">
+            <text class="banner-title">{{item.title}}</text>
+            <text class="banner-sub">{{item.subTitle}}</text>
+          </view>
+        </view>
+      </swiper-item>
+    </block>
+  </swiper>
+
+  <!-- 分类筛选 -->
+  <scroll-view class="category-scroll" scroll-x="true">
+    <view class="category-wrapper">
+      <view 
+        class="category-item {{activeCategory === item.id ? 'category-active' : ''}}" 
+        wx:for="{{categories}}" 
+        wx:key="id" 
+        bindtap="onCategoryTap" 
+        data-id="{{item.id}}"
+      >
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 商品主内容区 -->
+  <view class="product-section">
+    <view class="section-title">
+      <text class="title-text">精选菜单</text>
+      <view class="title-line"></view>
+    </view>
+
+    <view class="product-grid">
+      <view class="product-card" wx:for="{{products}}" wx:key="id">
+        <!-- 只有匹配分类或全部时显示 -->
+        <block wx:if="{{activeCategory === 'all' || activeCategory === item.category}}">
+          <view class="card-image-box">
+            <image src="{{item.image}}" mode="aspectFill" class="product-img"></image>
+            <text class="product-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
+          </view>
+          
+          <view class="card-body">
+            <view class="card-main-info">
+              <text class="product-name">{{item.name}}</text>
+              <text class="product-desc">{{item.desc}}</text>
+            </view>
+            
+            <view class="card-footer">
+              <text class="product-price">¥{{item.priceText}}</text>
+              
+              <view class="qty-control">
+                <view class="qty-btn minus" bindtap="minusQty" data-id="{{item.id}}">
+                  <text>-</text>
+                </view>
+                <text class="qty-num">{{item.qty}}</text>
+                <view class="qty-btn plus" bindtap="addQty" data-id="{{item.id}}">
+                  <text>+</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="bar-left">
+      <view class="cart-badge">
+        <text class="cart-count">{{cartCount}}</text>
+      </view>
+      <view class="price-info">
+        <text class="price-label">合计金额</text>
+        <text class="total-price">¥{{totalAmount}}</text>
+      </view>
+    </view>
+    <button class="submit-btn" bindtap="onSubmitOrder">
+      <text>立即下单</text>
+    </button>
+  </view>
+</view>
