@@ -52,3 +52,21 @@
 - `google-generativeai` SDK 本地未安装（`ModuleNotFoundError`），已选用方案 2：`urllib.request` 直接调 REST API。
 - API Key 已从本地文件读取到，本地可运行。
 - Streamlit UI 测试需要在浏览器环境中执行 `streamlit run app.py`，CLI 环境不支持，但全部逻辑路径已通过 test_smoke.py 静态覆盖。
+
+---
+
+## Round 3 完成项（2026-06-06，由总控在 master 直接执行）
+
+- [x] **Task 8**：`requirements.txt` 删除 `google-generativeai>=0.8`（未安装未使用），仅保留 `streamlit>=1.35`
+- [x] **Task 9**：新建 `.env.example`，含 Google AI Studio 获取 key 的链接和使用说明
+- [x] **Task 10**：Live 5-prompt 测试全部 PASS，Function Call 每次触发
+
+| prompt | Function Call | 校验 |
+|--------|--------------|------|
+| 生成一个活动报名页 | ✅ 触发 | PASS |
+| 生成一个商品详情页，包含价格和购买按钮 | ✅ 触发 | PASS |
+| 生成一个餐厅点餐页面 | ✅ 触发 | PASS |
+| 生成一个个人中心页，显示用户信息和订单入口 | ✅ 触发 | PASS |
+| 生成一个课程详情页 | ✅ 触发 | PASS |
+
+**通过率：5/5 (100%)**
