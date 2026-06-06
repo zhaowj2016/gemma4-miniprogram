@@ -9,7 +9,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-运行前请配置 `GEMINI_API_KEY` 或 `GEMMA_API_KEY`，也可以将 key 写入 `E:\file+desktop\gemma_key.txt`。生成结果下载后可用微信开发者工具游客模式打开，或将 `project.config.json` 中的 `touristappid` 替换为真实 AppID。
+运行前请配置环境变量 `GEMINI_API_KEY` 或复制 `.env.example` 为 `.env` 填入 key。生成结果下载后可用微信开发者工具游客模式打开，或将 `project.config.json` 中的 `touristappid` 替换为真实 AppID。
 
 ## 架构说明
 
@@ -21,7 +21,11 @@ streamlit run app.py
 
 ## Demo
 
-占位：可添加截图路径或演示 GIF，例如 `docs/demo-screenshot.png`。
+启动后访问 `http://localhost:8501`，在输入框描述目标页面（或点击示例按钮），
+点击「生成代码」即可在约 5-10 秒内看到 WXML / WXSS / JS 三段代码及 ZIP 下载按钮。
+
+生成的 ZIP 可直接导入[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，
+选择「游客模式」或将 `project.config.json` 中的 `touristappid` 替换为真实 AppID。
 
 ## 项目结构
 
