@@ -97,3 +97,48 @@ signup_form      | PASS    | 0
 - [ ] `python gemma_core/eval_harness.py` 能跑通并打印通过率
 - [ ] `gemma_core/prompt_builder.py` 的两个函数可正常 import
 - [ ] `coordination/status/codex.md` 已更新，git commit 完成
+
+---
+
+## [总控补充 2026-06-06] Round 2 任务
+
+**背景**：Round 1 全部完成（19 个样例 100% pass）。现在补齐提交必须有的文档。
+
+### 任务 C：写提交用 README.md（根目录）
+
+⚠️ 根目录已有 README.md（旧版规划文档）。**用新内容完整替换它**，符合比赛提交格式。
+
+```markdown
+# Gemma Match
+
+用 Gemma 4 Native Function Calling 生成微信小程序源码的 AI 应用。
+
+## 快速启动
+pip install -r requirements.txt
+streamlit run app.py
+
+## 架构说明
+[一段话：说明 Function Calling 如何驱动生成流程，mention TOOLS 定义、
+call_gemma_with_tools、validate_project、zip 打包，自愈重试和 fallback 黄金样例机制]
+
+## 黄金样例语料
+gemma_core/golden_examples/ 包含 19 个预验证场景，全部通过 validators.py 静态校验。
+
+## Demo
+[占位：可添加截图路径]
+
+## 项目结构
+[用代码块列主要文件 + 一行说明]
+```
+
+字数 400-600，中文，简洁专业。
+
+### 任务 D：写 gemma_core/README.md
+
+内容：本目录用途、`python eval_harness.py` 运行说明、import 示例、19 个场景列表。
+控制在 200 字以内。
+
+### 验收（Round 2）
+- [ ] 根目录 `README.md` 已替换为新内容，符合比赛格式
+- [ ] `gemma_core/README.md` 已新建
+- [ ] `coordination/status/codex.md` 追加 Round 2 完成项，git commit

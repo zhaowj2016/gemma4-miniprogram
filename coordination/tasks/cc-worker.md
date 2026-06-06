@@ -75,3 +75,53 @@
 - [ ] 下载 zip 解压后结构正确（含 app.json、pages/index/index.* 等）
 - [ ] 至少 2 个 prompt 走 Function Calling 路径（非 fallback）
 - [ ] `coordination/status/cc-worker.md` 已更新，git commit 完成
+
+---
+
+## [总控补充 2026-06-06] Round 2 任务
+
+**背景**：Round 1 已 merge。codex 已生成 19 个黄金样例 + corpus_index.json + 改进版 prompt_builder。
+现在需要你把这些成果整合进主流程，完成最终冒烟验证。
+
+### 任务 5：整合 gemma_core/prompt_builder
+
+`app.py` 当前 import 的是根目录旧版 `prompt_builder.py`。需要切换到新版。
+
+```python
+# app.py 里把这行：
+from prompt_builder import build_prompt, build_repair_prompt
+# 改为：
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'gemma_core'))
+from prompt_builder import build_prompt, build_repair_prompt
+```
+
+验证：`python -c "from gemma_core.prompt_builder import build_prompt; print(build_prompt('生成一个商品详情页')[:100])"` 应输出含约束清单和 few-shot 的 prompt 片段。
+
+### 任务 6：整合 fallback 路径
+
+`app.py` 的 fallback 当前用的是根目录 `golden_examples.py`。
+确认 `golden_examples.py` 的 `GOLDEN_DIR` 已指向 `gemma_core/golden_examples/`（已更新）。
+检查 `SCENARIO_KEYWORDS` 是否涵盖 19 个场景（目前只有 13 个），把缺少的场景补全：
+
+缺少的场景关键词（对照 `gemma_core/corpus_index.json`）：
+- `portfolio`、`restaurant_menu`、`real_estate`、`service_pricing`、`job_posting`、`coupon_claim`（后几个可能已有，请自行比对后补齐）
+
+### 任务 7：冒烟测试（代码静态验证）
+
+由于 CLI 环境无法跑 Streamlit，改为写一个离线验证脚本：
+
+```python
+# 新建 test_smoke.py
+# 1. import app 中的 generate_with_repair 函数（或等价逻辑）
+# 2. mock call_gemma_with_tools → 直接返回 golden_examples/product_detail 的内容
+# 3. 走完 validate → zip_exporter 全流程
+# 4. 断言 zip bytes 非空 + 解压后包含 app.json、pages/index/index.wxml
+# 5. python test_smoke.py 输出 PASS
+```
+
+### 验收（Round 2）
+- [ ] `app.py` 使用 `gemma_core/prompt_builder.py`
+- [ ] `golden_examples.py` 的 SCENARIO_KEYWORDS 已涵盖全部 19 个场景
+- [ ] `python test_smoke.py` 输出 PASS
+- [ ] `coordination/status/cc-worker.md` 追加 Round 2 完成项，git commit
