@@ -1,12 +1,21 @@
 # codex 状态
 
-**更新时间**：（agent 填写）
-**当前状态**：未开始
+**更新时间**：2026-06-06
+**当前状态**：已完成
 
 ## 完成项
-（agent 完成后在这里打勾）
+- [x] 读取 `coordination/tasks/codex.md`、`gemma_core/BUILD_SPEC.md`、`gemma_core/validators.py`
+- [x] 确认 `gemma_core/golden_examples/` 已有 19 个黄金样例
+- [x] 跑通 `python verify_golden.py`，19 个样例全部通过静态校验
+- [x] 修复 `gemma_core/prompt_builder.py` 的 corpus index 路径，改为读取 `gemma_core/corpus_index.json`
+- [x] 增强 prompt 检索逻辑，支持中文关键词子串命中
+- [x] 修复 `gemma_core/eval_harness.py` 的 benchmark 路径，改为读取 `gemma_core/benchmark_prompts.json`
+- [x] 跑通 `python gemma_core\eval_harness.py`，通过率 19/19 (100.0%)
+- [x] 验证 `build_prompt` / `build_repair_prompt` 可导入并正常构造 prompt
 
 ## 阻塞项
-（遇到问题在这里写，总控会来解锁）
+- 无
 
 ## 备注
+- 当前 Python 启用了 `safe_path`，`python -c` 不会自动把当前目录放入 `sys.path`；验证 prompt 模块时使用了 `sys.path.insert(0, '.')`。
+- 未清理根目录、未修改 app/gemma_client/deploy 相关文件；这些超出 codex worksheet 的 `gemma_core` 基建范围。

@@ -10,9 +10,13 @@ from typing import Any
 
 BASE_DIR = Path(__file__).resolve().parent
 GOLDEN_DIR = BASE_DIR / "golden_examples"
+CORPUS_INDEX_PATHS = (
+    BASE_DIR / "corpus_index.json",
+    GOLDEN_DIR / "corpus_index.json",
+)
 
 CONSTRAINT_CHECKLIST = """
-你是微信小程序 pages/index/index 页面代码生成器。请严格输出一个 JSON 对象, 只包含 wxml、wxss、js 三个键, 不要输出解释文字。
+你是微信小程序 pages/index/index 页面代码生成器。首选通过 create_miniprogram_page 工具返回页面代码; 如果当前运行环境没有工具调用能力, 才严格输出一个 JSON 对象, 只包含 wxml、wxss、js 三个键, 不要输出解释文字。
 
 约束清单:
 - 只用基础组件: view, text, image, button, input, textarea, form, scroll-view, swiper, swiper-item, block。
@@ -83,7 +87,7 @@ def build_repair_prompt(
 
 
 def _load_examples() -> list[dict[str, Any]]:
-    index = _load_json(GOLDEN_DIR / "corpus_index.json")
+    index = _load_first_json(CORPUS_INDEX_PATHS)
     index_entries = _coerce_index_entries(index)
 
     examples: list[dict[str, Any]] = []
@@ -138,6 +142,14 @@ def _load_json(path: Path) -> Any:
         return None
 
 
+def _load_first_json(paths: tuple[Path, ...]) -> Any:
+    for path in paths:
+        data = _load_json(path)
+        if data is not None:
+            return data
+    return None
+
+
 def _coerce_index_entries(index: Any) -> dict[str, dict[str, Any]]:
     if isinstance(index, dict):
         if isinstance(index.get("examples"), list):
@@ -179,6 +191,7 @@ def _select_examples(
         return []
 
     query_tokens = _tokens(user_prompt)
+    prompt_lower = user_prompt.lower()
     scored: list[tuple[int, str, dict[str, Any]]] = []
     for example in examples:
         keywords = set(example.get("keywords") or ())
@@ -186,6 +199,8 @@ def _select_examples(
             " ".join([example["id"], example.get("title", ""), example.get("prompt", "")])
         )
         score = len(query_tokens & (keywords | text_tokens))
+        score += _substring_score(prompt_lower, keywords)
+        score += _substring_score(prompt_lower, text_tokens)
         scored.append((score, example["id"], example))
 
     scored.sort(key=lambda item: (-item[0], item[1]))
@@ -204,6 +219,17 @@ def _tokens(text: str) -> set[str]:
         tokens.add(item)
         tokens.update(part for part in item.split("_") if part and part not in _STOP_WORDS)
     return tokens
+
+
+def _substring_score(prompt_lower: str, candidates: set[str]) -> int:
+    score = 0
+    for candidate in candidates:
+        item = str(candidate).lower().strip()
+        if len(item) < 2:
+            continue
+        if item in prompt_lower:
+            score += 2
+    return score
 
 
 def _format_example(example: dict[str, Any]) -> str:
