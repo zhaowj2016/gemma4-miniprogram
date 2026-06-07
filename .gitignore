@@ -8,3 +8,7 @@ node_modules/
 demo_cache/
 .env
 *.credentials.json
+deploy_config.json
+dummy_key.key
+tests/test_deploy.py
+.claude/

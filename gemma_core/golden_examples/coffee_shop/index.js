@@ -20,19 +20,19 @@ Page({
     banners: [
       {
         id: 'b1',
-        image: 'https://images.unsplash.com/photo-1495474472287-4d71bc89294d?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?w=375&q=80',
         title: '冬日限定 · 桂花拿铁',
         subTitle: '捕捉秋末的最后一抹香甜'
       },
       {
         id: 'b2',
-        image: 'https://images.unsplash.com/photo-1507133750040-4a8f565a5d2f?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=375&q=80',
         title: '埃塞俄比亚 · 耶加雪菲',
         subTitle: '花香与柑橘的完美交织'
       },
       {
         id: 'b3',
-        image: 'https://images.unsplash.com/photo-1442512595331-05a204775273?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1497636577773-f1231844b336?w=375&q=80',
         title: '会员专享 · 升级计划',
         subTitle: '加入 Aura Club 享受 8 折权益'
       }
@@ -57,7 +57,7 @@ Page({
         desc: '顶层海盐奶盖搭配浓郁焦糖，咸甜交织',
         price: 32,
         priceText: '32.00',
-        image: 'https://images.unsplash.com/photo-1536441573410-677506290201?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1481833761820-0509d3217039?w=375&q=80',
         qty: 0,
         tag: '人气推荐'
       },
@@ -68,7 +68,7 @@ Page({
         desc: '选用中深烘焙豆，纯正的咖啡原味',
         price: 26,
         priceText: '26.00',
-        image: 'https://images.unsplash.com/photo-1509042239860-f550ce5f3071?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=375&q=80',
         qty: 0,
         tag: ''
       },
@@ -79,7 +79,7 @@ Page({
         desc: '极致的茉莉花香与柠檬酸度，顶级之选',
         price: 88,
         priceText: '88.00',
-        image: 'https://images.unsplash.com/photo-1495474472287-4d71bc89294d?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?w=375&q=80',
         qty: 0,
         tag: '限量'
       },
@@ -90,7 +90,7 @@ Page({
         desc: '12小时低温慢萃，清爽如晨露',
         price: 38,
         priceText: '38.00',
-        image: 'https://images.unsplash.com/photo-1517701604599-bb29b56509d3?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1495774856032-8b90bbb32b32?w=375&q=80',
         qty: 0,
         tag: '清爽'
       },
@@ -101,7 +101,7 @@ Page({
         desc: '外焦里嫩，浓郁奶香在舌尖化开',
         price: 42,
         priceText: '42.00',
-        image: 'https://images.unsplash.com/photo-1533134242443-95767d01e8d1?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1559305616-3f99cd43e353?w=375&q=80',
         qty: 0,
         tag: '甜点之王'
       },
@@ -112,7 +112,7 @@ Page({
         desc: '植物基燕麦奶，健康低脂，口感丝滑',
         price: 35,
         priceText: '35.00',
-        image: 'https://images.unsplash.com/photo-1570968865866-d33c9794035a?w=375&q=80',
+        image: 'https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=375&q=80',
         qty: 0,
         tag: '健康'
       }

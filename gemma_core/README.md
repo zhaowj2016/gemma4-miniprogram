@@ -7,7 +7,7 @@ cd gemma_core
 python eval_harness.py
 ```
 
-可用 19 个样例作为 stub 跑通评测。导入示例：
+可用 23 个样例作为 stub 跑通评测。导入示例：
 
 ```python
 from prompt_builder import build_prompt, build_repair_prompt

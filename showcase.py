@@ -20,6 +20,7 @@ SHOWCASE = [
     ("michelin_restaurant",  "🍽️ 米其林餐厅"),
     ("coffee_shop",          "☕ 咖啡点单"),
     ("restaurant_menu",      "🍜 餐厅点餐"),
+    ("luxury_service",       "💎 高端定制服务"),
     ("profile",              "👤 个人中心"),
     ("course_detail",        "📚 课程详情"),
 ]

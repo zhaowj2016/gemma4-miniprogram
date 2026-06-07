@@ -16,8 +16,8 @@ import io
 import traceback
 
 # Ensure project root is on path
-sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gemma_core"))
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "gemma_core"))
 
 
 def _mock_call_gemma_with_tools(prompt: str) -> dict:

@@ -523,27 +523,54 @@ elif st.session_state.stage == "done" and st.session_state.page_files:
     # WeChat CI deploy — shown when user clicks the button above, or always visible via expander
     if st.session_state.get("_show_deploy"):
         st.subheader("📱 上传到微信预览")
-        wechat_appid = st.text_input("AppID", placeholder="wxxxxxxxxxxxxxxxe", key="deploy_appid")
-        wechat_key = st.text_area(
-            "私钥内容（粘贴 private.xxx.key 文件内容）",
-            height=120,
-            placeholder="-----BEGIN RSA PRIVATE KEY-----\n...",
-            key="deploy_key",
-        )
-        if st.button("🔳 生成微信预览二维码", type="primary", use_container_width=True):
-            if not wechat_appid.strip():
-                st.error("请填写 AppID")
-            elif not wechat_key.strip():
-                st.error("请粘贴私钥内容")
-            else:
+        from ci_deployer import deploy_to_wechat, load_deploy_config, save_deploy_config, clear_deploy_config
+        _saved_cfg = load_deploy_config()
+
+        if _saved_cfg:
+            # One-click deploy: credentials already saved
+            st.info(f"已保存凭证 · AppID: `{_saved_cfg['appid']}`")
+            _col_deploy, _col_clear = st.columns([4, 1])
+            with _col_deploy:
+                _do_deploy = st.button("🔳 一键生成微信预览二维码", type="primary", use_container_width=True)
+            with _col_clear:
+                if st.button("清除凭证", use_container_width=True):
+                    clear_deploy_config()
+                    st.rerun()
+            if _do_deploy:
                 with st.spinner("正在上传到微信服务器..."):
                     try:
-                        from ci_deployer import deploy_to_wechat
-                        qr_path = deploy_to_wechat(page_files, wechat_appid.strip(), wechat_key.strip())
+                        qr_path = deploy_to_wechat(page_files, _saved_cfg["appid"], _saved_cfg["private_key"])
                         st.success("✅ 预览二维码生成成功！用微信扫码即可在手机上预览。")
                         st.image(qr_path, width=240)
                     except Exception as e:
-                        st.error(f"上传失败：{e}")
+                        st.error(str(e))
+        else:
+            # First-time setup: show input form
+            wechat_appid = st.text_input("AppID", placeholder="wxxxxxxxxxxxxxxxe", key="deploy_appid")
+            wechat_key = st.text_area(
+                "私钥内容（粘贴 private.xxx.key 文件内容）",
+                height=120,
+                placeholder="-----BEGIN RSA PRIVATE KEY-----\n...",
+                key="deploy_key",
+            )
+            _remember = st.checkbox("记住凭证（下次一键部署，凭证保存在本地，不会上传）", value=True)
+            if st.button("🔳 生成微信预览二维码", type="primary", use_container_width=True):
+                if not wechat_appid.strip():
+                    st.error("请填写 AppID")
+                elif not wechat_key.strip():
+                    st.error("请粘贴私钥内容")
+                else:
+                    with st.spinner("正在上传到微信服务器..."):
+                        try:
+                            qr_path = deploy_to_wechat(page_files, wechat_appid.strip(), wechat_key.strip())
+                            if _remember:
+                                save_deploy_config(wechat_appid.strip(), wechat_key.strip())
+                                st.success("✅ 预览二维码生成成功！凭证已保存，下次一键部署。")
+                            else:
+                                st.success("✅ 预览二维码生成成功！用微信扫码即可在手机上预览。")
+                            st.image(qr_path, width=240)
+                        except Exception as e:
+                            st.error(str(e))
 
     if st.button("🔄 重新开始", type="secondary"):
         for k in list(st.session_state.keys()):

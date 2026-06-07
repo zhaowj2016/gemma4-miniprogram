@@ -7,8 +7,8 @@ import sys
 import os
 import json
 
-sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "gemma_core"))
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "gemma_core"))
 
 from gemma_client import call_gemma_with_tools
 from prompt_builder import build_prompt

@@ -108,7 +108,7 @@ Page({
           name: '金箔巧克力球',
           desc: '70% 纯黑巧克力搭配 24K 食用金箔',
           price: 320,
-          image: 'https://images.unsplash.com/photo-1563805042-7639ae3a3c6b?w=375&q=80',
+          image: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=375&q=80',
           tags: ['甜点'],
           qty: 0
         },
