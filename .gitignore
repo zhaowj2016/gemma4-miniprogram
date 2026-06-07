@@ -12,3 +12,21 @@ deploy_config.json
 dummy_key.key
 tests/test_deploy.py
 .claude/
+
+# 本地工具缓存 / 内部协作文件 / 早期原型残留（不属于提交内容）
+.opencode/
+.mavis/
+coordination/
+legacy-python/
+generator.py
+manifest_parser.py
+preview_app.py
+render_html.py
+validator.py
+preview.html
+/golden_examples/
+next.config.ts
+tsconfig.json
+eslint.config.mjs
+postcss.config.mjs
+tests/precompile_cache.py
