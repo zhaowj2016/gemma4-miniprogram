@@ -2,13 +2,51 @@
 
 **GDG Shanghai · Gemma 4 开发者大赛 · 赛道 A — 自主 AI Agent / Agentic Code Generation**
 
-## One-line Pitch
+## 一句话推介（One-line Pitch）
 
 > MiniPilot Agent 把 Gemma 4 从聊天模型，变成了小微商家的微信小程序 MVP 生成 Agent。
 >
 > MiniPilot Agent turns Gemma 4 from a chat model into a small-business WeChat Mini Program MVP generation agent.
 
 一句自然语言描述生意想法 → Agent 通过 **Gemma 4 Function Calling** 理解需求、生成结构化代码、自我校验修复，几十秒内交付一个**可预览、可下载**的小程序页面原型。
+
+---
+
+## 项目简介
+
+**比赛**：GDG Shanghai · Gemma 4 开发者大赛（赛道 A — 自主 AI Agent / Agentic Code Generation）
+**核心模型**：Gemma 4（Google AI Studio 托管 `gemma-4-27b-it` / `gemma-4-31b-it` + AMD vLLM 自托管 `gemma-4-31b-it`，均为 **Dense** 架构）
+
+**这个项目最想让评委看到的，不是"它能生成代码"，而是**：
+
+1. Gemma 4 的 Native Function Calling 被用作系统可靠性的核心来源，而非装饰性调用——双后端、统一协议、三层解析优先级，都是为了让"结构化输出"这件事在任何环境下都立得住；
+2. 一个真正具备"自己发现问题、自己理解错误、自己修正"能力的多步 Agent 闭环（Validator + Self-Correction）；
+3. 工程上对"生成内容是否经得起真实环境检验"的较真——grounding 案例研究是最直接的证据；
+4. 诚实的工程边界声明：清楚知道现在做到了什么、还差什么——这本身就是技术成熟度的一部分。
+5. web介绍：https://minipilot-agent.vercel.app/
+
+```text
+MiniPilot Agent turns Gemma 4 from a chat model into a small-business software prototyping agent.
+通过 MiniPilot Agent，一个小商家的生意想法，可以被 Gemma 4 转化成一个可预览的小程序 MVP。
+```
+
+---
+
+## 项目仓库链接
+
+GitHub 仓库：
+
+https://github.com/zhaowj2016/gemma4-miniprogram.git
+
+---
+
+## 演示视频
+
+演示视频已放在仓库内：
+
+`docs/demo/演示视频_AI小程序生成平台.mp4`
+
+[演示视频_AI小程序生成平台.mp4](docs/demo/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91_AI%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%94%9F%E6%88%90%E5%B9%B3%E5%8F%B0.mp4)
 
 ---
 
@@ -117,12 +155,12 @@ Render Layer：render_wxml.py（手机预览） / zip_exporter.py（工程导出
 
 ## Gemma 4 Usage
 
-| 用途 | 模型 | 调用方式 |
-|---|---|---|
-| 需求澄清 / 文本理解 | `gemma-4-27b-it`（Google AI Studio） | 普通文本生成，提炼场景关键词与风格方向 |
-| 代码生成 + 自审（主链路） | `gemma-4-31b-it`（Google AI Studio，**Dense**） | **Native Function Calling**：`functionDeclarations` + `toolConfig.AUTO` 强制结构化输出 |
+| 用途                       | 模型                                                         | 调用方式                                                     |
+| -------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 需求澄清 / 文本理解        | `gemma-4-27b-it`（Google AI Studio）                         | 普通文本生成，提炼场景关键词与风格方向                       |
+| 代码生成 + 自审（主链路）  | `gemma-4-31b-it`（Google AI Studio，**Dense**）              | **Native Function Calling**：`functionDeclarations` + `toolConfig.AUTO` 强制结构化输出 |
 | 代码生成（自托管深度链路） | `gemma-4-31b-it`（AMD vLLM 自托管，**Dense**，served name `gemm`） | OpenAI-compatible `tools` + `tool_choice`，配合 vLLM `--tool-call-parser gemma4` |
-| 长上下文 / 长输出 | AMD vLLM（`max_model_len = 32768`） | 适合复杂页面生成与多轮修改场景 |
+| 长上下文 / 长输出          | AMD vLLM（`max_model_len = 32768`）                          | 适合复杂页面生成与多轮修改场景                               |
 
 > **模型选型说明**：`Gemma 4 26B-A4B` 是 **MoE** 架构，`Gemma 4 31B` 是 **Dense** 架构——本项目两条链路用的均为 **31B Dense**。
 
@@ -286,25 +324,6 @@ requirements.txt
 .env.example                 # API Key 配置模板
 ```
 
----
 
-## 项目信息
 
-**比赛**：GDG Shanghai · Gemma 4 开发者大赛（赛道 A — 自主 AI Agent / Agentic Code Generation）
-**截止**：2026-06-08 23:59
-**核心模型**：Gemma 4（Google AI Studio 托管 `gemma-4-27b-it` / `gemma-4-31b-it` + AMD vLLM 自托管 `gemma-4-31b-it`，均为 **Dense** 架构）
-
-**这个项目最想让评委看到的，不是"它能生成代码"，而是**：
-
-1. Gemma 4 的 Native Function Calling 被用作系统可靠性的核心来源，而非装饰性调用——双后端、统一协议、三层解析优先级，都是为了让"结构化输出"这件事在任何环境下都立得住；
-2. 一个真正具备"自己发现问题、自己理解错误、自己修正"能力的多步 Agent 闭环（Validator + Self-Correction）；
-3. 工程上对"生成内容是否经得起真实环境检验"的较真——grounding 案例研究是最直接的证据；
-4. 诚实的工程边界声明：清楚知道现在做到了什么、还差什么——这本身就是技术成熟度的一部分。
-
----
-
-```text
-MiniPilot Agent turns Gemma 4 from a chat model into a small-business software prototyping agent.
-通过 MiniPilot Agent，一个小商家的生意想法，可以被 Gemma 4 转化成一个可预览的小程序 MVP。
-```
 
