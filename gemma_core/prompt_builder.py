@@ -213,7 +213,9 @@ def build_prompt(user_prompt: str, style_hint: str | None = None, asset_list: li
             "禁止创造新的图片 URL，禁止使用 Unsplash/Picsum/远程 http(s) 图片。\n"
             "禁止使用 localhost、127.0.0.1、blob、base64、tmp、streamlit 路径。\n"
             "如果 asset_list 中存在 usage=user_content_image 的图片，必须优先放在页面顶部 hero/banner 区域。\n"
-            "如果没有用户上传图片，请从 role=hero 的 library_image 中选择一张作为顶部主视觉。"
+            "如果没有用户上传图片，请从 role=hero 的 library_image 中选择一张作为顶部主视觉。\n"
+            "不要把同一张图片连续重复铺满商品列表；同一个 path 最多复用 2 次。\n"
+            "当可用图片少于商品数量时，优先保证 hero、门店图、重点商品有图，次要商品可以用纯色图片区、标签或文字信息承载。"
         )
     parts.append("用户需求:")
     parts.append(user_prompt.strip())
@@ -339,14 +341,36 @@ def build_repair_prompt(
     """Build a repair prompt that feeds validator errors back to the model."""
     normalized_files = _normalize_page_files(page_files)
     error_lines = "\n".join(f"- {err}" for err in errors) or "- 未提供具体错误"
+    repair_assets = []
+    for asset in list(page_files.get("assets", []) or []) + list(page_files.get("library_assets", []) or []):
+        path = asset.get("wxml_path") or asset.get("path")
+        if path:
+            repair_assets.append(
+                {
+                    "asset_id": asset.get("asset_id"),
+                    "path": path,
+                    "usage": asset.get("usage", "library_image"),
+                    "industry": asset.get("industry"),
+                    "role": asset.get("role") or asset.get("role_hint"),
+                }
+            )
+    asset_section = ""
+    if repair_assets:
+        asset_section = (
+            "\n\n本地图片 asset_list（唯一允许使用的图片来源，禁止新增 URL）:\n"
+            + json.dumps(repair_assets[:12], ensure_ascii=False, indent=2)
+            + "\n同一个图片 path 最多复用 2 次；不要把同一张图片铺满商品列表。"
+        )
 
     return f"""{CONSTRAINT_CHECKLIST}
 
 你刚才生成的代码没有通过 validators.validate_project 校验。请只修复下面列出的校验错误, 不要扩展新功能, 不要改变原始需求的范围。
-必须全量重新输出 JSON, 且只输出 wxml、wxss、js 三个键。
+必须立即通过 create_miniprogram_page 工具返回完整最终版本；如果工具不可用，才输出严格 JSON，且只包含 wxml、wxss、js 三个键。
+不要解释原因，不要写分析，不要输出 markdown。
 
 原始用户需求:
 {user_prompt.strip()}
+{asset_section}
 
 当前代码:
 {json.dumps(normalized_files, ensure_ascii=False, indent=2)}
@@ -390,16 +414,22 @@ def _load_high_quality_examples() -> list[dict[str, Any]]:
 def _select_high_quality(
     user_prompt: str, examples: list[dict[str, Any]]
 ) -> dict[str, Any] | None:
-    """按关键词命中数挑出最相关的 1 个高质量样例；无命中则回退首个（保证总有学习对象）。"""
+    """Pick one high-quality example only when it clearly matches the prompt."""
     if not examples:
         return None
     prompt_lower = user_prompt.lower()
+    non_product_domains = (
+        "咖啡", "咖啡店", "奶茶", "饮品", "餐厅", "菜单", "菜品", "点餐",
+        "coffee", "cafe", "restaurant", "menu",
+    )
+    if any(word in prompt_lower for word in non_product_domains):
+        return None
     best, best_score = None, -1
     for ex in examples:
         score = sum(1 for kw in ex.get("keywords", ()) if str(kw).lower() in prompt_lower)
         if score > best_score:
             best, best_score = ex, score
-    return best or examples[0]
+    return best if best_score > 0 else None
 
 
 def _load_examples() -> list[dict[str, Any]]:

@@ -203,6 +203,7 @@ def asset_prompt_block(assets: list[dict]) -> str:
         "你不能使用 localhost、127.0.0.1、blob、base64、tmp、streamlit 路径。\n"
         "你只能使用 asset_list 中给定的 path。\n"
         "优先把用户图片放在页面顶部 hero/banner 区域。\n"
+        "不要把同一张图片连续重复铺满列表；同一个 path 最多复用 2 次。\n"
     )
 
 
@@ -314,6 +315,45 @@ def _replace_polluted_image_paths(text: str, replacement: str) -> str:
     return result
 
 
+def _replace_nth(text: str, old: str, new: str, nth: int) -> str:
+    start = -1
+    for _ in range(nth):
+        start = text.find(old, start + 1)
+        if start < 0:
+            return text
+    return text[:start] + new + text[start + len(old) :]
+
+
+def _diversify_repeated_asset_paths(text: str, assets: list[dict]) -> str:
+    """Rotate repeated local asset paths so generated lists do not show one image everywhere."""
+    if not text:
+        return text
+    paths: list[str] = []
+    seen: set[str] = set()
+    for asset in assets:
+        path = _asset_path(asset)
+        if path and path not in seen:
+            paths.append(path)
+            seen.add(path)
+    if len(paths) < 2:
+        return text
+
+    result = text
+    spare_paths = [path for path in paths if path not in result]
+    if not spare_paths:
+        spare_paths = paths[1:]
+
+    for path in paths:
+        count = result.count(path)
+        while count > 1 and spare_paths:
+            replacement = spare_paths.pop(0)
+            if replacement == path:
+                continue
+            result = _replace_nth(result, path, replacement, 2)
+            count -= 1
+    return result
+
+
 def attach_assets_and_fallback(
     page_files: dict | None,
     assets: list[dict],
@@ -338,6 +378,7 @@ def attach_assets_and_fallback(
 
     wxml = _replace_polluted_image_paths(wxml, first_path)
     js = _replace_polluted_image_paths(js, first_path)
+    js = _diversify_repeated_asset_paths(js, candidate_assets)
 
     if not any(_has_asset_reference(wxml, asset) for asset in candidate_assets):
         wxml = _insert_hero_image(wxml, first_path)

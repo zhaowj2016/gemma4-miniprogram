@@ -32,17 +32,69 @@ def all_library_assets() -> list[dict]:
     return list(load_manifest().get("assets", []))
 
 
+SPECIFIC_INDUSTRIES = {
+    "coffee",
+    "restaurant",
+    "beauty",
+    "fashion",
+    "education",
+    "wedding",
+    "event_signup",
+}
+
+GENERIC_INDUSTRIES = {"product_general", "store_service"}
+
+RELATED_INDUSTRIES = {
+    "coffee": {"restaurant"},
+    "restaurant": {"coffee"},
+    "beauty": {"store_service"},
+    "fashion": {"product_general"},
+    "education": {"event_signup"},
+    "wedding": {"event_signup"},
+    "event_signup": {"education", "store_service"},
+}
+
+
+def _industry_hits(prompt: str, industry: str) -> int:
+    hits = 0
+    for kw in INDUSTRY_KEYWORDS.get(industry, []):
+        if kw.lower() in prompt:
+            hits += 1
+    return hits
+
+
 def select_image_assets(user_prompt: str, limit: int = 8) -> list[dict]:
     assets = all_library_assets()
     if not assets:
         return []
     prompt = (user_prompt or "").lower()
+
+    specific_hits = {
+        industry: _industry_hits(prompt, industry)
+        for industry in SPECIFIC_INDUSTRIES
+    }
+    matched_specific = {industry for industry, hits in specific_hits.items() if hits > 0}
+    allowed_industries = set()
+    if matched_specific:
+        allowed_industries |= matched_specific
+        for industry in matched_specific:
+            allowed_industries |= RELATED_INDUSTRIES.get(industry, set())
+
     scored: list[tuple[int, int, dict]] = []
     for idx, asset in enumerate(assets):
         industry = str(asset.get("industry", ""))
+        if allowed_industries and industry not in allowed_industries:
+            continue
         tags = [str(t).lower() for t in asset.get("tags", [])]
         role = str(asset.get("role", "")).lower()
         score = 0
+        if matched_specific:
+            if industry in matched_specific:
+                score += 100 + specific_hits.get(industry, 0) * 12
+            elif industry in GENERIC_INDUSTRIES:
+                score -= 25
+            else:
+                score -= 10
         for kw in INDUSTRY_KEYWORDS.get(industry, []):
             if kw.lower() in prompt:
                 score += 5
@@ -51,6 +103,8 @@ def select_image_assets(user_prompt: str, limit: int = 8) -> list[dict]:
                 score += 2
         if role == "hero":
             score += 2
+        elif role in {"product", "service", "store", "detail", "staff", "venue", "speaker"}:
+            score += 1
         scored.append((score, -idx, asset))
 
     selected = [item[2] for item in sorted(scored, reverse=True)[: max(1, limit)]]
