@@ -1,0 +1,2 @@
+# Python dependencies for Vercel Serverless Functions.
+# The live generator uses only the standard library plus local modules.

@@ -1,4 +1,13 @@
-<!doctype html>
+from __future__ import annotations
+
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "vercel_minipilot" / "live.html"
+
+
+HTML = r"""<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -241,3 +250,14 @@ renderTrace("idle");
 </script>
 </body>
 </html>
+"""
+
+
+def main() -> None:
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(HTML, encoding="utf-8")
+    print(f"wrote {OUT}")
+
+
+if __name__ == "__main__":
+    main()
