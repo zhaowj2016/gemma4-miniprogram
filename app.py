@@ -6,6 +6,9 @@ import base64
 from pathlib import Path
 
 _GEMMA_CORE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gemma_core")
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 if _GEMMA_CORE not in sys.path:
     sys.path.insert(0, _GEMMA_CORE)
 
@@ -37,7 +40,7 @@ def build_review_prompt(user_prompt: str, page_files: dict) -> str:
     return (
         "你是微信小程序代码 QA 工程师。对以下代码做自检优化，通过 create_miniprogram_page 工具返回最终版本。\n"
         "自检清单：1.代码量<900行→扩充数据和区块 2.数组条目<4→补至5-6条 3.缺底部操作栏→补充 "
-        "4.Unsplash ID含大写→改小写 5.卡片无阴影/圆角→补充\n"
+        "4.image src 只能保留 /assets/library/... 或 /assets/uploads/... 本地路径 5.卡片无阴影/圆角→补充\n"
         "即使无改动也必须调用 create_miniprogram_page 工具返回三文件。\n\n"
         f"用户需求：{user_prompt}\n"
         f"代码量：WXML {wl}行 WXSS {sl}行 JS {jl}行 共{wl+sl+jl}行\n\n"
@@ -48,6 +51,14 @@ from zip_exporter import export_zip
 from golden_examples import get_golden_example
 from render_wxml import render_phone_html
 from scaffold import APP_WXSS
+from miniprogram_assets import (
+    assets_to_preview_images,
+    attach_assets_and_fallback,
+    prepare_uploaded_assets,
+    preprocess_uploaded_image,
+    validation_asset_files,
+)
+from image_library import select_image_assets
 
 st.set_page_config(page_title="Gemma Match", page_icon="✨", layout="wide")
 
@@ -83,7 +94,13 @@ if "share" in _params:
         with _left:
             try:
                 from scaffold import APP_WXSS as _aws
-                _ph = render_phone_html(pf["wxml"], pf["wxss"], pf["js"], _aws)
+                _ph = render_phone_html(
+                    pf["wxml"],
+                    pf["wxss"],
+                    pf["js"],
+                    _aws,
+                    user_images=assets_to_preview_images(pf.get("assets", [])),
+                )
                 _b64 = base64.b64encode(_ph.encode("utf-8")).decode("ascii")
                 st.iframe(f"data:text/html;base64,{_b64}", height=720)
             except Exception as _e:
@@ -108,6 +125,7 @@ for key, default in [
     ("image_list", None),        # list of (bytes, mime_type), replaces single image_bytes
     ("page_files", None),
     ("used_fallback", False),
+    ("gen_mode", "agent"),       # agent | deep — see mode selector below
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -124,6 +142,28 @@ st.divider()
 # STAGE: input
 # ═════════════════════════════════════════════════════════════════════════════
 if st.session_state.stage == "input":
+
+    with st.container(border=True):
+        st.caption("⚙️ 生成模式")
+        _MODE_OPTIONS = {
+            "agent": "⚡ 快速 Agent 模式（Google AI Studio · 主链路）",
+            "deep":  "🔬 深度生成模式（AMD vLLM Gemma 31B 自托管 · 长上下文）",
+        }
+        _mode_keys = list(_MODE_OPTIONS.keys())
+        _mode_choice = st.radio(
+            "选择本次生成优先使用的后端",
+            options=_mode_keys,
+            format_func=lambda k: _MODE_OPTIONS[k],
+            index=_mode_keys.index(st.session_state.gen_mode),
+            horizontal=True,
+            label_visibility="collapsed",
+            key="_gen_mode_radio",
+        )
+        st.session_state.gen_mode = _mode_choice
+        if _mode_choice == "agent":
+            st.caption("优先使用 Google 官方托管的 Gemma 4（触发率与稳定性已通过 5/5 实测验证）；若暂不可用会自动切到 AMD vLLM 兜底，并如实标注。")
+        else:
+            st.caption("优先使用自托管的 Gemma 31B（更长上下文、更长输出）；若网关暂不可用会自动切到 Google AI Studio 兜底，并如实标注 —— 双链路互为主备，确保生成不中断。")
 
     left, right = st.columns([3, 2], gap="large")
 
@@ -171,7 +211,9 @@ if st.session_state.stage == "input":
                 if size_mb > MAX_MB:
                     st.warning(f"⚠️ {uf.name} ({size_mb:.1f} MB) 超过 {int(MAX_MB)} MB，已跳过")
                 else:
-                    valid_imgs.append((raw, uf.type or "image/jpeg", uf.name, size_mb))
+                    mime = uf.type or "image/jpeg"
+                    raw, mime, _meta = preprocess_uploaded_image(raw, mime)
+                    valid_imgs.append((raw, mime, uf.name, size_mb))
 
             if valid_imgs:
                 st.session_state.image_list = [(d, m) for d, m, _, _ in valid_imgs]
@@ -324,15 +366,23 @@ elif st.session_state.stage == "generating":
     qa_pairs  = st.session_state.get("_qa_pairs", [])
     img_list  = st.session_state.get("image_list") or []
     img_count = len(img_list)
+    uploaded_assets = prepare_uploaded_assets(img_list)
+    library_assets = select_image_assets(st.session_state.original_input, limit=8)
+    gen_mode  = st.session_state.get("gen_mode", "agent")
+    _MODE_STATUS_LABEL = {
+        "agent": "快速 Agent 模式（Google AI Studio）",
+        "deep":  "深度生成模式（AMD vLLM Gemma 31B 自托管）",
+    }.get(gen_mode, gen_mode)
 
     if qa_pairs:
         prompt = build_enriched_prompt(
             st.session_state.original_input,
             qa_pairs,
             image_count=img_count,
+            asset_list=uploaded_assets,
         )
     else:
-        prompt = build_prompt(st.session_state.original_input)
+        prompt = build_prompt(st.session_state.original_input, asset_list=uploaded_assets)
         if img_count == 1:
             prompt += "\n\n【多模态输入】用户上传了 1 张参考图片，请分析图片内容、配色和风格，在生成的代码中自然融入。"
         elif img_count > 1:
@@ -341,14 +391,25 @@ elif st.session_state.stage == "generating":
     result = None
     with st.status("🧠 Gemma 4 工作中...", expanded=True) as gen_status:
         # Step 1: Generate
-        st.write("📡 正在发送请求到 **gemma-4-31b-it**（预计 15-30 秒）...")
+        st.write(f"📡 正在以 **{_MODE_STATUS_LABEL}** 调用 Gemma 4（预计 15-30 秒）...")
         if img_count:
             st.write(f"🖼️ 已附加 {img_count} 张参考图片（多模态输入）")
         try:
             result = call_gemma_with_tools(
                 prompt,
                 image_list=img_list if img_list else None,
+                mode=gen_mode,
             )
+            if result.get("fallback_used"):
+                _actual_label = {
+                    "amd": "AMD vLLM Gemma 31B（深度生成模式）",
+                    "google": "Google AI Studio（快速 Agent 模式）",
+                }.get(result.get("provider"), result.get("provider"))
+                st.write(
+                    f"🔁 你选择了「{_MODE_STATUS_LABEL}」，但本次自动切换到了 **{_actual_label}** 兜底"
+                    f"（原因：{result.get('fallback_reason', '原链路暂不可用')}）— "
+                    f"双后端互为主备，确保生成不中断"
+                )
             wxml_lines = len(result.get("wxml", "").splitlines())
             wxss_lines = len(result.get("wxss", "").splitlines())
             js_lines   = len(result.get("js",   "").splitlines())
@@ -371,6 +432,7 @@ elif st.session_state.stage == "generating":
             "pages/index/index.wxss": result.get("wxss", ""),
             "pages/index/index.js":   result.get("js", ""),
         }
+        val_files.update(validation_asset_files({"assets": uploaded_assets, "library_assets": library_assets}))
         val_result = validate_project(val_files, full_project=False)
 
         if val_result.ok:
@@ -384,12 +446,13 @@ elif st.session_state.stage == "generating":
                 repair_prompt = build_repair_prompt(
                     st.session_state.original_input, result, errs
                 )
-                result = call_gemma_with_tools(repair_prompt)
+                result = call_gemma_with_tools(repair_prompt, mode=gen_mode)
                 val_files = {
                     "pages/index/index.wxml": result.get("wxml", ""),
                     "pages/index/index.wxss": result.get("wxss", ""),
                     "pages/index/index.js":   result.get("js", ""),
                 }
+                val_files.update(validation_asset_files({"assets": uploaded_assets, "library_assets": library_assets}))
                 val_result = validate_project(val_files, full_project=False)
                 if val_result.ok:
                     st.write("✅ 自愈成功，代码通过校验")
@@ -407,7 +470,7 @@ elif st.session_state.stage == "generating":
             st.write("🔎 31B 自检优化中（第二轮）...")
             try:
                 review_prompt = build_review_prompt(st.session_state.original_input, result)
-                reviewed = call_gemma_with_tools(review_prompt)
+                reviewed = call_gemma_with_tools(review_prompt, mode=gen_mode)
                 old_total = sum(len(result.get(k, "").splitlines()) for k in ("wxml", "wxss", "js"))
                 new_total = sum(len(reviewed.get(k, "").splitlines()) for k in ("wxml", "wxss", "js"))
                 if new_total >= old_total - 30:
@@ -419,6 +482,15 @@ elif st.session_state.stage == "generating":
                     st.write(f"⚠️ 自检返回代码偏短（{new_total}行 vs 原{old_total}行），保留原版本")
             except Exception as e:
                 st.write(f"⚠️ 自检跳过：{e}")
+
+        result = attach_assets_and_fallback(result, uploaded_assets, library_assets)
+        val_files = {
+            "pages/index/index.wxml": result.get("wxml", ""),
+            "pages/index/index.wxss": result.get("wxss", ""),
+            "pages/index/index.js": result.get("js", ""),
+        }
+        val_files.update(validation_asset_files(result))
+        val_result = validate_project(val_files, full_project=False)
 
         gen_status.update(label="✅ 生成完成！", state="complete")
 
@@ -450,10 +522,18 @@ elif st.session_state.stage == "done" and st.session_state.page_files:
             phone_html = render_phone_html(
                 wxml, wxss, js,
                 app_wxss=APP_WXSS,
-                user_images=st.session_state.get("image_list"),
+                user_images=assets_to_preview_images(page_files.get("assets", [])) or st.session_state.get("image_list"),
             )
             _b64 = base64.b64encode(phone_html.encode("utf-8")).decode("ascii")
             st.iframe(f"data:text/html;base64,{_b64}", height=720)
+            _assets = page_files.get("assets", []) or []
+            if _assets:
+                _hit_count = sum(
+                    1
+                    for a in _assets
+                    if (a.get("wxml_path") or a.get("path") or "") in (wxml + js)
+                )
+                st.caption(f"上传图片资源：{len(_assets)} 张已写入小程序项目，当前代码引用 {_hit_count} 张。")
         except Exception as e:
             st.error(f"预览渲染失败：{e}")
 
@@ -474,6 +554,30 @@ elif st.session_state.stage == "done" and st.session_state.page_files:
             f"代码量：WXML {wxml_l} 行 · WXSS {wxss_l} 行 · JS {js_l} 行 "
             f"· 共 {wxml_l+wxss_l+js_l} 行"
         )
+
+        _provider = page_files.get("provider")
+        _parse_method = page_files.get("parse_method")
+        if _provider or _parse_method:
+            _provider_label = {
+                "amd": "AMD vLLM Gemma 31B（自托管）",
+                "google": "Google AI Studio Gemma 4",
+            }.get(_provider, _provider)
+            _method_label = {
+                "standard_tool_calls": "标准 tool_calls（原生结构化输出）",
+                "gemma_raw_tool_call": "Gemma 原生信封解析（自定义适配层）",
+                "plain_text_fallback": "纯文本兜底解析",
+            }.get(_parse_method, _parse_method)
+            _fallback_note = ""
+            if page_files.get("fallback_used"):
+                _requested_label = {
+                    "agent": "快速 Agent 模式",
+                    "deep": "深度生成模式",
+                }.get(page_files.get("requested_mode"), page_files.get("requested_mode"))
+                _fallback_note = (
+                    f" · ⚠️ 你选择的是「{_requested_label}」，本次自动切换到了上述后端兜底"
+                    f"（{page_files.get('fallback_reason', '原链路暂不可用')}）"
+                )
+            st.caption(f"🔌 Provider: {_provider_label} · Parse Method: {_method_label}{_fallback_note}")
 
         zip_bytes = export_zip(page_files)
         dl_col, share_col, deploy_col = st.columns(3)

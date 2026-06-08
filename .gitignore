@@ -30,3 +30,8 @@ tsconfig.json
 eslint.config.mjs
 postcss.config.mjs
 tests/precompile_cache.py
+
+# 调试截图 / UI 流程测试日志 / 临时探针产物（开发期产物，非提交内容）
+dev_artifacts/
+ui_flow_test.log
+docs/cross_domain_compounding_playbook.md
