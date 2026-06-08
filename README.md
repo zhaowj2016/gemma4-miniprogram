@@ -8,7 +8,7 @@
 >
 > MiniPilot Agent turns Gemma 4 from a chat model into a small-business WeChat Mini Program MVP generation agent.
 
-一句自然语言描述生意想法 → Agent 通过 **Gemma 4 Function Calling** 理解需求、生成结构化代码、自我校验修复，几十秒内交付一个**可预览、可下载**的小程序页面原型。
+一句自然语言描述生意想法 → Agent 通过 **Gemma 4 Function Calling** 理解需求、生成结构化代码、自我校验修复，并把用户上传图片与本地素材一起打包进真实小程序工程，交付一个**可预览、可下载**的小程序页面原型。
 
 ---
 
@@ -34,10 +34,10 @@ MiniPilot Agent **不是要替代专业开发**，而是把原本需要"沟通 �
 
 ## Solution
 
-用户输入一句话需求 →
+用户输入一句话需求（可选上传图片） →
 Gemma 4 完成需求理解 → 通过 **Function Calling / Tool Calling** 调用 `create_miniprogram_page` 工具，生成结构化的 `wxml / wxss / js` 三件套 →
 **Static Validator** 静态校验 → 触发 **Self-Correction** 自愈修复（把错误回传给 Gemma 重新生成）→
-**Web 侧手机预览**实时渲染 + **ZIP 导出**。
+**Web 侧手机预览**实时渲染 + **ZIP 导出**。上传图片会被写入 `assets/uploads/`，本地行业素材来自 `assets/library/`；导出与微信预览只携带当前页面实际使用的素材，避免触发微信 2MB 预览包限制。
 
 它的核心不是"调用一个模型把代码吐出来"，而是把 Gemma 4 真正放进一条**软件生产流程**里：理解需求、调用工具、生成代码、接受校验、修复错误、输出可视化结果——形成一个可闭环的 Agentic Workflow。
 
@@ -45,12 +45,13 @@ Gemma 4 完成需求理解 → 通过 **Function Calling / Tool Calling** 调用
 
 ## Demo
 
-- 启动方式见下方 [How to Run](#how-to-run)；在线演示链接见提交登记信息。
-- **推荐演示 Prompt**（已验证可稳定复现，建议直接用于评审现场 / 录屏）：
+- 启动方式见下方 [How to Run](#how-to-run)；在线演示 / Vercel 链接见提交登记信息。
+- **推荐演示 Prompt**（来自近期真实迭代中更稳定、容易解释的场景，建议用于评审现场 / 录屏）：
   1. `帮我生成一个咖啡店点单小程序页面，要有商品列表、购物车和底部结算按钮`
   2. `帮我生成一个活动报名页，要有活动介绍、姓名手机号输入框和报名按钮`
-  3. `帮我生成一个门店介绍页，要有门店封面、营业时间、地址、联系电话和预约按钮`
-- `showcase.py`（端口 8502）内置多个预生成场景，每个场景左侧手机预览、右侧查看完整源码，适合在不等待实时生成的情况下快速浏览效果。
+  3. `生成一个电商商品详情页，包含商品主图、价格、规格选择、优惠信息和底部购买按钮`
+- `app_showcase.py`（端口 8504）是对外展示页，精选 AI 婚礼工作室、米其林餐厅、咖啡点单等更适合讲故事的真实样例。
+- `app_demo.py`（端口 8505）是实时生成页，展示 Brief → Gemma Agent Trace → Phone Preview → Source / Zip / 微信预览的完整闭环。预览区会持久化最近一次生成结果，避免页面刷新后丢掉长代码样本。
 
 ---
 
@@ -87,7 +88,7 @@ P6  Preview / Export   Web 侧手机预览（WXML→HTML 渲染 + WeChat Runtime
 ## Architecture
 
 ```text
-Frontend (Streamlit · app.py)
+Frontend (Streamlit · app_demo.py / app_showcase.py)
   │
   ▼
 Model Router  (gemma_client.call_gemma_with_tools)
@@ -137,7 +138,7 @@ Render Layer：render_wxml.py（手机预览） / zip_exporter.py（工程导出
 
 ### 1. Native Function Calling，而非简单文本解析（技术卓越度 25%）
 
-模型必须通过 `create_miniprogram_page` 工具结构化输出 `wxml / wxss / js` 三件套——这不是"调用方式"的偏好问题，而是让 **Gemma 4 的结构化推理能力直接成为系统可靠性的来源**。Google AI Studio 链路触发率 100%（5/5 live 测试通过，见 [`tests/test_live.py`](tests/test_live.py)）。
+模型必须通过 `create_miniprogram_page` 工具结构化输出 `wxml / wxss / js` 三件套——这不是"调用方式"的偏好问题，而是让 **Gemma 4 的结构化推理能力直接成为系统可靠性的来源**。当前实现保留 live / parser / AMD tool-calls 验证脚本；比赛演示时以现场 API 可用性为准，不把一次旧 live 数字包装成永久承诺。
 
 ### 2. 双后端统一工具协议（技术卓越度 25% / 创新性 15%）
 
@@ -159,9 +160,11 @@ Google AI Studio 与 AMD 自托管 vLLM 共用同一套 `create_miniprogram_page
 
 官方 FAQ 对 Function Calling 最佳实践的建议是：当模型返回非标准格式时，应编写鲁棒异常捕获代码并触发 Agent 自我纠错。MiniPilot Agent 的对应实现：生成代码 → Validator 检查 → 发现 HARD 错误 → 把具体错误信息回传给 Gemma 重新生成 → 再次校验；若仍未通过，则回退到最接近原始需求的预验证黄金样例，确保演示链路绝不中断。
 
-### 6. Grounded 图片库（创新性 15%）
+### 6. Grounded 图片资产链路（创新性 15%）
 
-真实问题：模型会生成格式完全正确、肉眼难辨，但服务器上根本不存在的 Unsplash 图片 ID。解决方案：构建一份**经过 HTTP 逐个实测验证**的可信图片 ID 列表，按行业 / 场景分类直接注入 prompt，并明确约束模型"只能从中选取、不允许自由编造"。完整的排查、对照实验与修复过程见案例研究 [`docs/unsplash_grounding_case_study.md`](docs/unsplash_grounding_case_study.md)——修复后对全项目 38 个唯一外部图片引用（96 处）做了 100% 可访问性 HTTP 审计。
+真实问题：模型会生成格式完全正确、肉眼难辨，但在真机小程序里不可访问的图片路径。解决方案已从“让模型记住远程 URL”升级为“后端提供本地 `asset_list`”：用户上传图保存为 `assets/uploads/user_upload_###.ext`，行业素材库保存为 `assets/library/...`，Prompt 强约束模型只能使用 `/assets/uploads/...` 或 `/assets/library/...`。如果模型漏插图片，后端会兜底插入 hero image；如果出现 `blob / localhost / data:image / tmp / Unsplash / Picsum` 等污染路径，Validator 会拦截。
+
+近期资产审计记录见 [`docs/image_asset_audit_report.md`](docs/image_asset_audit_report.md)：历史远程图片候选检查 262 个，其中 169 个有效、93 个无效 / 模板 / 非图片；当前运行时素材库覆盖 9 个行业目录，共 27 张本地图片资产。旧的 Unsplash grounding 复盘仍保留在 [`docs/unsplash_grounding_case_study.md`](docs/unsplash_grounding_case_study.md)，作为为什么要做本地资产链路的证据。
 
 ### 7. Web 侧手机预览（功能完备性 20%）
 
@@ -175,27 +178,30 @@ Google AI Studio 与 AMD 自托管 vLLM 共用同一套 `create_miniprogram_page
 
 ### ✅ 已实现并验证（可在演示中直接展示）
 
-- Google AI Studio API 调用 + Native Function Calling（5/5 live 测试通过）
+- MiniPilot Agent 品牌化展示页（8504）+ 实时生成页（8505）
+- Google AI Studio API 调用 + Native Function Calling（保留 live 验证脚本；现场结果受 API / quota 影响）
 - AMD vLLM Gemma 31B 自托管推理 + 标准 `tool_calls` 返回（实测命中 `parse_method = standard_tool_calls`）
 - 统一 Tool Call 解析层（三层优先级，Google + AMD 共用同一契约，前端可见 `provider` / `parse_method`）
 - raw `<|tool_call>` 信封兜底解析（Gemma 私有格式裸露为文本时的适配层，未被新逻辑替换或删除）
 - 长上下文 Prompt 组装（需求澄清 + few-shot 黄金样例检索 + 设计风格随机化）
-- 经 HTTP 实测审计的图片 ID 库注入（grounding，杜绝模型自由编造图片 URL）
+- 本地图片 asset_list 注入：用户上传图进入 `assets/uploads/`，行业素材进入 `assets/library/`
+- 图片路径污染拦截：禁止 `blob / localhost / data:image / tmp / Unsplash / Picsum` 进入 WXML
+- 图片兜底插入：模型未使用上传图 / hero 图时，后端自动补 `<image class="hero-image" ... />`
 - WXML / WXSS / JS 三件套拆包解析
 - Static Validator 静态门禁（接入主流程，校验结果实时展示给用户）
 - Self-Correction 自愈（HARD 错误触发，错误回传重新生成，仍失败则回退黄金样例）
 - Web 侧手机预览（WXML → HTML 渲染 + WeChat Runtime Shim）
-- ZIP 导出 + 分享链接
+- ZIP 导出 + 分享链接；Zip 会包含全部用户上传图，以及当前页面引用到的 `assets/library` 素材
 
 ### ⚙️ 半实现 / 部分验证（已有代码，但存在边界条件或外部依赖）
 
-- **微信官方真机预览二维码**：[`ci_deployer.py`](ci_deployer.py) 已真实集成官方 `miniprogram-ci` / `upload.js`，但需要用户提供真实小程序 AppID + 私钥才能触发，演示现场不具备稳定可重复性，因此不作为核心展示路径，仅作为可选的进阶能力保留；
+- **微信官方真机预览二维码**：[`ci_deployer.py`](ci_deployer.py) 已真实集成官方 `miniprogram-ci` / `upload.js`，会把页面文件、上传图与本地素材复制到同一个 `projectPath` 后再预览；但它依赖真实 AppID、私钥、CI 权限、IP 白名单和微信侧频率限制，因此不作为核心展示路径，仅作为可选进阶能力保留；
 - **AMD vLLM 自托管链路的可用性**：依赖外部云端 GPU 实例，实例重启会导致网关地址变化、需人工同步配置——技术上已验证可行（标准 `tool_calls` 已稳定命中），但尚不具备生产级"开箱即用"的稳定性；
-- **图片 grounding 的实现形态**：以"经过 HTTP 审计的可信 ID 列表注入 prompt"实现 grounding 目标（已验证有效、可复核），形态上是轻量级方案，尚非独立的结构化资产库模块。
+- **图片裁剪**：上传图片会做轻量自动裁边，适合处理截图边缘黑块 / 空白边，但还不是完整的人工裁剪器或多图相册编辑器。
 
 ### 🗺️ Roadmap（明确列出，不与"已实现"混淆）
 
-- 用户自有图片插入模式 / 参考图风格拆解（多模态能力深化）
+- 更完整的用户图片编辑：手动裁剪、主体定位、多图排序与素材管理
 - LoRA / SFT 提升输出格式稳定性（详见 Limitations 中"为什么当前不做微调"）
 - 将 `miniprogram-ci` 校验纳入主流程的自动化门禁（当前为可选手动操作）
 - 多轮修改输入框 / 商业模板市场
@@ -210,7 +216,7 @@ Google AI Studio 与 AMD 自托管 vLLM 共用同一套 `create_miniprogram_page
 - **不是**生产级小程序编译器，**不保证**微信开发者工具 0 Error 编译——`validators.py` 是 Hackathon 阶段的自研静态门禁，用于提前拦截高频低级错误，不能取代真实编译验证；
 - **未完成**完整的微信小程序上线链路，**未实现**支付 / 登录 / 云开发，且明确不在当前阶段范围内；
 - **未进行**模型微调——当前阶段时间有限、ROCm / AMD 微调链路复杂；更关键的是，当前核心瓶颈并非模型知识本身，而是工具协议、静态校验、grounding 与 Demo 稳定性，微调也不适合用来"记忆图片 URL 等具体外部事实"（这正是 grounding 案例研究揭示的核心结论：模型对"格式长什么样"的记忆远强于对"某个具体实例是否真实存在"的记忆，唯一可靠的解法是把事实性查证从生成过程中剥离）；
-- **多模态**目前是"参考图输入 + grounded 图片选取"，**未实现**完整的"图生小程序"闭环或音视频多模态；
+- **多模态**目前是"上传图片进入真实项目资源 + 轻量自动裁边 + grounded 图片选取"，**未实现**完整的"图生小程序"闭环或音视频多模态；
 - Web 侧手机预览是**低保真模拟**（轻量 WeChat Runtime Shim，覆盖常用 API 子集），不是微信真机渲染或开发者工具编译结果；部分生成结果可手动导入微信开发者工具进一步验证，生产级编译、真机预览和上线链路是下一阶段工作。
 
 ---
@@ -233,14 +239,14 @@ pip install -r requirements.txt
 cp .env.example .env          # 填入 GEMINI_API_KEY
 # 或：export GEMINI_API_KEY=your_key_here
 
-# 3. 启动主应用（代码生成器，含完整 Pipeline）
-streamlit run app.py --server.port 8501
+# 3. 启动实时生成页（代码生成器，含完整 Pipeline）
+streamlit run app_demo.py --server.port 8505
 
-# 4. 可选：启动效果展示页（多场景速览，无需等待实时生成）
-streamlit run showcase.py --server.port 8502
+# 4. 启动效果展示页（多场景速览，无需等待实时生成）
+streamlit run app_showcase.py --server.port 8504
 ```
 
-访问 `http://localhost:8501` 使用代码生成器；访问 `http://localhost:8502` 浏览预生成场景展示。
+访问 `http://localhost:8505` 使用实时生成器；访问 `http://localhost:8504` 浏览 MiniPilot Agent 展示页。
 
 > AMD vLLM 自托管链路是可选的加分项：在 `E:\file+desktop\gemma_amd_config.txt` 配置网关地址与凭证后自动启用；未配置时系统直接走 Google AI Studio 主链路，不影响核心功能可用性——这正是双后端架构"互为主备"的体现。
 
@@ -253,12 +259,12 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
 ENV GEMINI_API_KEY=your_key_here
-CMD ["streamlit", "run", "app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+CMD ["streamlit", "run", "app_demo.py", "--server.port", "8505", "--server.address", "0.0.0.0"]
 ```
 
 ```bash
-docker build -t gemma-match .
-docker run -p 8501:8501 -e GEMINI_API_KEY=your_key gemma-match
+docker build -t minipilot-agent .
+docker run -p 8505:8505 -e GEMINI_API_KEY=your_key minipilot-agent
 ```
 
 ---
@@ -266,8 +272,9 @@ docker run -p 8501:8501 -e GEMINI_API_KEY=your_key gemma-match
 ## 目录结构
 
 ```text
-app.py                       # Streamlit 主入口：输入 → 生成 → 校验 → 自愈 → 预览 → 下载
-showcase.py                  # 效果展示页（多场景速览，端口 8502）
+app_demo.py                  # 实时生成页：输入 → 生成 → 校验 → 自愈 → 预览 → 下载 / 微信预览
+app_showcase.py              # MiniPilot Agent 展示页（多场景速览，端口 8504）
+app.py / showcase.py         # 早期入口，保留用于兼容旧流程
 gemma_client.py              # Gemma 4 双后端调用 + Native Function Calling + 统一 Tool Call 解析层
 render_wxml.py               # WXML → HTML 渲染器 + WeChat Runtime Shim（Web 侧手机预览）
 validators.py                # 静态校验门禁（WXML/WXSS/JS + 安全检查）
@@ -275,11 +282,14 @@ scaffold.py                  # 固定小程序脚手架（app.json/project.confi
 zip_exporter.py              # 合并脚手架与页面三件套，打包 ZIP
 golden_examples.py           # 黄金样例关键词检索 fallback（自愈兜底）
 ci_deployer.py               # 微信官方 miniprogram-ci CLI 集成（可选：扫码预览/部署）
+miniprogram_assets.py        # 上传图保存、轻量裁边、asset_list、hero image 兜底插入
+assets/library/              # 本地行业图片素材库；导出/预览时只复制当前页面引用到的文件
 gemma_core/
   prompt_builder.py          # 需求澄清 / 代码生成 / 自审 / 自愈全套 Prompt 构建（含图片 grounding 库）
   golden_examples/           # 23 个预验证场景语料
   eval_harness.py            # 离线批量评测入口
 docs/
+  image_asset_audit_report.md       # 本地图片资产与历史远程图片审计记录
   unsplash_grounding_case_study.md   # grounding 问题排查案例研究
 tests/                       # 开发期验证脚本（live API 测试、解析单测、AMD 标准 tool_calls 验证等）
 requirements.txt
