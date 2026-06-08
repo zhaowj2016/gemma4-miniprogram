@@ -1,0 +1,14 @@
+{
+  "name": "ArticleList",
+  "description": "News or article feed with local mock content.",
+  "keywords": ["article", "news", "feed", "blog", "content", "文章", "新闻", "资讯", "列表"],
+  "requiredData": ["articleListTitle", "articleListItems"],
+  "allowedComponents": ["view", "text"],
+  "defaultData": {
+    "articleListTitle": "Latest articles",
+    "articleListItems": [
+      {"id": "a1", "title": "Designing stable blocks", "desc": "Small semantic blocks reduce page generation failure points.", "meta": "3 min read"},
+      {"id": "a2", "title": "Validator first workflow", "desc": "Every composed page is checked before it leaves the harness.", "meta": "5 min read"}
+    ]
+  }
+}

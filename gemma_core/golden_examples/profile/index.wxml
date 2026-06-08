@@ -1,0 +1,66 @@
+<view class="container">
+  <view class="user-card">
+    <view class="user-row">
+      <view class="avatar">
+        <text class="avatar-text">{{avatarText}}</text>
+      </view>
+      <view class="user-info">
+        <text class="user-name">{{userName}}</text>
+        <text class="user-id">ID: {{userIdText}}</text>
+        <text class="user-level">{{levelText}}</text>
+      </view>
+      <view class="edit-btn" bindtap="onEditTap">
+        <text class="edit-btn-text">编辑</text>
+      </view>
+    </view>
+    <view class="stat-row">
+      <view class="stat-item" bindtap="onStatTap" data-key="follow">
+        <text class="stat-value">{{followCountText}}</text>
+        <text class="stat-label">关注</text>
+      </view>
+      <view class="stat-item" bindtap="onStatTap" data-key="fans">
+        <text class="stat-value">{{fansCountText}}</text>
+        <text class="stat-label">粉丝</text>
+      </view>
+      <view class="stat-item" bindtap="onStatTap" data-key="like">
+        <text class="stat-value">{{likeCountText}}</text>
+        <text class="stat-label">获赞</text>
+      </view>
+      <view class="stat-item" bindtap="onStatTap" data-key="collect">
+        <text class="stat-value">{{collectCountText}}</text>
+        <text class="stat-label">收藏</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="order-entry" bindtap="onOrderEntryTap">
+    <view class="order-entry-head">
+      <text class="order-entry-title">我的订单</text>
+      <text class="order-entry-more">全部 ›</text>
+    </view>
+    <view class="order-entry-grid">
+      <view class="order-entry-item" wx:for="{{orderTypes}}" wx:key="key" data-key="{{item.key}}" bindtap="onOrderTypeTap">
+        <view class="order-entry-icon">
+          <text class="order-entry-icon-text">{{item.iconText}}</text>
+        </view>
+        <text class="order-entry-label">{{item.name}}</text>
+        <text class="order-entry-badge" wx:if="{{item.badgeText}}">{{item.badgeText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-section">
+    <view class="menu-row" wx:for="{{menuList}}" wx:key="key" data-key="{{item.key}}" bindtap="onMenuTap">
+      <view class="menu-row-left">
+        <view class="menu-icon">
+          <text class="menu-icon-text">{{item.iconText}}</text>
+        </view>
+        <text class="menu-name">{{item.name}}</text>
+      </view>
+      <view class="menu-row-right">
+        <text class="menu-extra" wx:if="{{item.extraText}}">{{item.extraText}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+</view>

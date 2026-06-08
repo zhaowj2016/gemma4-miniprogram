@@ -1,0 +1,51 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">{{areaName}}</text>
+    <text class="header-sub">共 {{propertyCountText}} 套在售房源</text>
+  </view>
+
+  <view class="filter-row">
+    <view class="filter-chip {{currentFilter === item.key ? 'filter-chip-active' : ''}}" wx:for="{{filters}}" wx:key="key" data-key="{{item.key}}" bindtap="onFilterTap">
+      <text class="filter-chip-text">{{item.name}}</text>
+    </view>
+  </view>
+
+  <view class="property-list">
+    <view class="property-card" wx:for="{{properties}}" wx:key="id" data-id="{{item.id}}" bindtap="onPropertyTap">
+      <view class="property-cover">
+        <text class="property-cover-text">{{item.coverText}}</text>
+        <text class="property-tag" wx:if="{{item.tagText}}">{{item.tagText}}</text>
+        <view class="property-photo-count">
+          <text class="property-photo-count-text">{{item.photoCountText}} 图</text>
+        </view>
+      </view>
+      <view class="property-body">
+        <view class="property-title-row">
+          <text class="property-title">{{item.title}}</text>
+        </view>
+        <view class="property-feature-row">
+          <text class="property-feature">{{item.roomCountText}} 室 {{item.hallCountText}} 厅</text>
+          <text class="property-feature-divider">·</text>
+          <text class="property-feature">{{item.areaText}} 平米</text>
+          <text class="property-feature-divider">·</text>
+          <text class="property-feature">{{item.floorText}}</text>
+        </view>
+        <view class="property-tag-row">
+          <text class="property-tag-item" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+        </view>
+        <view class="property-bottom-row">
+          <view class="property-price-block">
+            <text class="property-price-num">{{item.priceText}}</text>
+            <text class="property-price-unit">万元</text>
+          </view>
+          <text class="property-price-per">{{item.unitPriceText}} 元/平米</text>
+        </view>
+        <view class="property-meta-row">
+          <text class="property-meta-item">{{item.subwayText}}</text>
+          <text class="property-meta-divider">·</text>
+          <text class="property-meta-item">{{item.schoolText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

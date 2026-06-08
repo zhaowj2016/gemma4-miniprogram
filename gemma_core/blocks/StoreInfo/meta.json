@@ -1,0 +1,13 @@
+{
+  "name": "StoreInfo",
+  "description": "Store profile, hours, and address without location APIs.",
+  "keywords": ["store", "shop", "location", "hours", "address", "门店", "店铺", "地址", "营业"],
+  "requiredData": ["storeInfoName", "storeInfoDesc", "storeInfoHours", "storeInfoAddress"],
+  "allowedComponents": ["view", "text"],
+  "defaultData": {
+    "storeInfoName": "North Star Studio",
+    "storeInfoDesc": "Offline-friendly store profile using mock hours and address.",
+    "storeInfoHours": "10:00 - 21:00",
+    "storeInfoAddress": "88 Riverside Road"
+  }
+}

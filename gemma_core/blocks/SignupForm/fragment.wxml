@@ -1,0 +1,15 @@
+<view class="signup-form">
+  <text class="signup-form__title">{{signupFormTitle}}</text>
+  <text class="signup-form__desc">{{signupFormDesc}}</text>
+  <form class="signup-form__body" bindsubmit="onSignupFormSubmit">
+    <view class="signup-form__field">
+      <text class="signup-form__label">Name</text>
+      <input class="signup-form__input" value="{{signupFormName}}" placeholder="{{signupFormNamePlaceholder}}" bindinput="onSignupFormNameInput" />
+    </view>
+    <view class="signup-form__field">
+      <text class="signup-form__label">Phone</text>
+      <input class="signup-form__input" value="{{signupFormPhone}}" placeholder="{{signupFormPhonePlaceholder}}" type="number" bindinput="onSignupFormPhoneInput" />
+    </view>
+    <button class="signup-form__button" form-type="submit">{{signupFormButtonText}}</button>
+  </form>
+</view>

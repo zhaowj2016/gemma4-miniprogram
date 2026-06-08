@@ -1,0 +1,9 @@
+<view class="tab-switcher">
+  <view class="tab-switcher__tabs">
+    <view class="tab-switcher__tab" wx:for="{{tabSwitcherTabs}}" wx:key="id" bindtap="onTabSwitcherTap">
+      <text class="tab-switcher__tab-text">{{item.label}}</text>
+    </view>
+  </view>
+  <text class="tab-switcher__panel-title">{{tabSwitcherActiveTitle}}</text>
+  <text class="tab-switcher__panel-desc">{{tabSwitcherActiveDesc}}</text>
+</view>

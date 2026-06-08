@@ -1,0 +1,145 @@
+<view class="page-container">
+  <!-- 顶部状态栏/用户信息 -->
+  <view class="header-nav">
+    <view class="user-info">
+      <text class="user-name">{{userProfile.name}}</text>
+      <view class="user-badges">
+        <text class="badge">★ {{userProfile.rating}}</text>
+        <text class="badge">经验 {{userProfile.experience}}</text>
+      </view>
+    </view>
+    <view class="cart-icon">
+      <text class="icon-text">🛒</text>
+      <text class="cart-count">{{cartCount}}</text>
+    </view>
+  </view>
+
+  <!-- 顶部 Banner 轮播 -->
+  <swiper class="main-swiper" indicator-dots="true" circular="true" current="{{currentSwiper}}" bindchange="onSwiperChange">
+    <block wx:for="{{banners}}" wx:key="id">
+      <swiper-item>
+        <image class="swiper-image" src="{{item.url}}" mode="aspectFill" />
+        <view class="swiper-overlay">
+          <text class="swiper-title">{{item.title}}</text>
+          <text class="swiper-desc">{{item.desc}}</text>
+        </view>
+      </swiper-item>
+    </block>
+  </swiper>
+
+  <!-- 功能 Tab 切换 -->
+  <view class="tab-container">
+    <view class="tab-item {{activeTab === 'gallery' ? 'tab-active' : ''}}" bindtap="onTabChange" data-tab="gallery">
+      <text>作品集</text>
+      <view class="tab-line"></view>
+    </view>
+    <view class="tab-item {{activeTab === 'ai_services' ? 'tab-active' : ''}}" bindtap="onTabChange" data-tab="ai_services">
+      <text>AI 服务</text>
+      <view class="tab-line"></view>
+    </view>
+    <view class="tab-item {{activeTab === 'booking' ? 'tab-active' : ''}}" bindtap="onTabChange" data-tab="booking">
+      <text>定制预约</text>
+      <view class="tab-line"></view>
+    </view>
+  </view>
+
+  <!-- 内容区 -->
+  <scroll-view scroll-y="true" class="content-scroll">
+    
+    <!-- 作品集板块 -->
+    <block wx:if="{{activeTab === 'gallery'}}">
+      <view class="section-header">
+        <text class="section-title">数字艺术画廊</text>
+        <text class="section-subtitle">每一帧都是精心计算的浪漫</text>
+      </view>
+      <view class="gallery-grid">
+        <view class="gallery-card" wx:for="{{gallery}}" wx:key="id">
+          <image class="gallery-img" src="{{item.url}}" mode="aspectFill" />
+          <view class="gallery-info">
+            <text class="img-title">{{item.title}}</text>
+            <view class="like-btn {{isLiked[item.id] ? 'liked' : ''}}" bindtap="onLikeTap" data-id="{{item.id}}">
+              <text>{{isLiked[item.id] ? '❤️' : '🤍'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- AI 服务板块 -->
+    <block wx:if="{{activeTab === 'ai_services'}}">
+      <view class="section-header">
+        <text class="section-title">AI 增强能力</text>
+        <text class="section-subtitle">突破物理限制，定义视觉边界</text>
+      </view>
+      <view class="services-list">
+        <view class="service-card" wx:for="{{aiServices}}" wx:key="id" bindtap="onServiceSelect" data-service="{{item}}">
+          <view class="service-left">
+            <view class="service-icon">{{item.icon}}</view>
+            <view class="service-text">
+              <text class="service-name">{{item.title}}</text>
+              <text class="service-detail">{{item.desc}}</text>
+            </view>
+          </view>
+          <view class="service-right">
+            <text class="service-tag">{{item.tag}}</text>
+            <text class="service-price">{{item.price}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 预约板块 -->
+    <block wx:if="{{activeTab === 'booking'}}">
+      <view class="section-header">
+        <text class="section-title">专属方案定制</text>
+        <text class="section-subtitle">选择最适合您的数字化记忆方案</text>
+      </view>
+      <view class="package-container">
+        <view class="package-card {{item.recommended ? 'pkg-highlight' : ''}}" wx:for="{{packages}}" wx:key="id">
+          <view wx:if="{{item.recommended}}" class="pkg-badge">推荐</view>
+          <text class="pkg-name">{{item.name}}</text>
+          <view class="pkg-price-box">
+            <text class="currency">¥</text>
+            <text class="amount">{{item.price}}</text>
+            <text class="unit">/ 套餐</text>
+          </view>
+          <view class="pkg-features">
+            <block wx:for="{{item.features}}" wx:for-item="feat" wx:key="*this">
+              <view class="feat-item">
+                <text class="feat-dot">✓</text>
+                <text>{{feat}}</text>
+              </view>
+            </block>
+          </view>
+          <button class="pkg-btn" bindtap="onBookPackage" data-name="{{item.name}}">立即预约</button>
+        </view>
+      </view>
+    </block>
+
+    <!-- 底部留白 -->
+    <view class="bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-nav">
+    <view class="nav-item active">
+      <text class="nav-icon">🏠</text>
+      <text class="nav-text">首页</text>
+    </view>
+    <view class="nav-item">
+      <text class="nav-icon">🎨</text>
+      <text class="nav-text">风格</text>
+    </view>
+    <view class="nav-item center-btn">
+      <view class="center-circle">AI</view>
+    </view>
+    <view class="nav-item">
+      <text class="nav-icon">📅</text>
+      <text class="nav-text">订单</text>
+    </view>
+    <view class="nav-item">
+      <text class="nav-icon">👤</text>
+      <text class="nav-text">我的</text>
+    </view>
+  </view>
+</view>

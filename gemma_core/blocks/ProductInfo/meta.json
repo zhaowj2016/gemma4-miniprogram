@@ -1,0 +1,14 @@
+{
+  "name": "ProductInfo",
+  "description": "Product title, price, tags, and selling points.",
+  "keywords": ["product", "detail", "price", "goods", "sku", "商品", "详情", "价格", "产品"],
+  "requiredData": ["productInfoName", "productInfoPriceText", "productInfoBadge", "productInfoSummary", "productInfoTags"],
+  "allowedComponents": ["view", "text"],
+  "defaultData": {
+    "productInfoName": "AeroPods Pro",
+    "productInfoPriceText": "499.00",
+    "productInfoBadge": "Local mock",
+    "productInfoSummary": "Lightweight product detail copy prepared in JS data without WXML function calls.",
+    "productInfoTags": ["Noise control", "Fast charge", "Warranty"]
+  }
+}

@@ -1,0 +1,10 @@
+2026-06-06 17:08:03.211 Uvicorn server started on 0.0.0.0:8502
+2026-06-06 17:15:37.216 Please replace `st.components.v1.html` with `st.iframe`.
+
+`st.components.v1.html` will be removed after 2026-06-01.
+2026-06-06 17:15:37.223 Please replace `st.components.v1.html` with `st.iframe`.
+
+`st.components.v1.html` will be removed after 2026-06-01.
+2026-06-06 17:15:37.230 Please replace `st.components.v1.html` with `st.iframe`.
+
+`st.components.v1.html` will be removed after 2026-06-01.

@@ -1,0 +1,469 @@
+===WXML===
+<view class="container">
+  <view class="header">
+    <text class="header-title">{{restaurantName}}</text>
+    <view class="header-meta">
+      <text class="header-rating">★ {{ratingText}}</text>
+      <text class="header-divider">·</text>
+      <text class="header-meta-item">月售 {{monthlySalesText}}</text>
+      <text class="header-divider">·</text>
+      <text class="header-meta-item">人均 ¥{{avgPriceText}}</text>
+    </view>
+  </view>
+
+  <view class="body">
+    <scroll-view class="category-bar" scroll-y="{{true}}">
+      <view class="category-item {{currentCategory === item.key ? 'category-item-active' : ''}}" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="onCategoryTap">
+        <text class="category-text">{{item.name}}</text>
+      </view>
+    </scroll-view>
+
+    <scroll-view class="menu-pane" scroll-y="{{true}}">
+      <view class="menu-banner">
+        <text class="menu-banner-text">{{currentCategoryBanner}}</text>
+      </view>
+      <view class="dish-list">
+        <view class="dish-item" wx:for="{{dishes}}" wx:key="id">
+          <view class="dish-cover">
+            <text class="dish-cover-text">{{item.coverText}}</text>
+          </view>
+          <view class="dish-body">
+            <text class="dish-name">{{item.name}}</text>
+            <text class="dish-desc">{{item.descText}}</text>
+            <view class="dish-tag-row">
+              <text class="dish-tag" wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this">{{t}}</text>
+            </view>
+            <view class="dish-bottom-row">
+              <view class="dish-price-block">
+                <text class="dish-price-currency">¥</text>
+                <text class="dish-price">{{item.priceText}}</text>
+                <text class="dish-price-original" wx:if="{{item.originalText}}">¥{{item.originalText}}</text>
+              </view>
+              <view class="dish-cart {{item.qty > 0 ? 'dish-cart-active' : ''}}">
+                <view class="cart-minus {{item.qty > 0 ? 'cart-minus-show' : ''}}" data-id="{{item.id}}" bindtap="onMinusTap">
+                  <text class="cart-minus-text">-</text>
+                </view>
+                <text class="cart-qty {{item.qty > 0 ? 'cart-qty-show' : ''}}">{{item.qtyText}}</text>
+                <view class="cart-plus" data-id="{{item.id}}" bindtap="onPlusTap">
+                  <text class="cart-plus-text">+</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="footer">
+    <view class="footer-cart" bindtap="onCartTap">
+      <text class="footer-cart-icon">🛒</text>
+      <text class="footer-cart-text">{{totalQtyText}} 件 · ¥{{totalAmountText}}</text>
+    </view>
+    <view class="footer-checkout" bindtap="onCheckoutTap">
+      <text class="footer-checkout-text">去结算</text>
+    </view>
+  </view>
+</view>
+===WXSS===
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f7f8fa;
+}
+
+.header {
+  padding: 24rpx 32rpx;
+  background-color: #ffffff;
+  border-bottom: 1rpx solid #eeeeee;
+}
+.header-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+.header-meta {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #888888;
+}
+.header-rating {
+  color: #ff8a00;
+  font-weight: 500;
+  margin-right: 8rpx;
+}
+.header-divider {
+  margin: 0 12rpx;
+  color: #dddddd;
+}
+
+/* 左右双栏 */
+.body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.category-bar {
+  width: 200rpx;
+  background-color: #f5f6f8;
+}
+.category-item {
+  padding: 28rpx 16rpx;
+  font-size: 26rpx;
+  color: #555555;
+  text-align: center;
+  position: relative;
+}
+.category-item-active {
+  background-color: #ffffff;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+.category-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 32rpx;
+  bottom: 32rpx;
+  width: 6rpx;
+  background-color: #ff7a59;
+  border-radius: 0 4rpx 4rpx 0;
+}
+
+/* 菜品栏 */
+.menu-pane {
+  flex: 1;
+  background-color: #ffffff;
+}
+.menu-banner {
+  height: 120rpx;
+  margin: 16rpx 24rpx;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.menu-banner-text {
+  color: #ffffff;
+  font-size: 26rpx;
+  letter-spacing: 4rpx;
+}
+
+.dish-list {
+  padding: 0 24rpx 24rpx;
+}
+.dish-item {
+  display: flex;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.dish-item:last-child {
+  border-bottom: none;
+}
+.dish-cover {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(135deg, #a8edea, #fed6e3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+.dish-cover-text {
+  color: #ffffff;
+  font-size: 22rpx;
+}
+.dish-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.dish-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+.dish-desc {
+  display: block;
+  font-size: 22rpx;
+  color: #888888;
+  line-height: 1.5;
+  margin-bottom: 12rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dish-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 12rpx;
+}
+.dish-tag {
+  font-size: 20rpx;
+  color: #777777;
+  background-color: #f5f6f8;
+  padding: 2rpx 10rpx;
+  border-radius: 4rpx;
+  margin-right: 8rpx;
+  margin-bottom: 4rpx;
+}
+.dish-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.dish-price-block {
+  display: flex;
+  align-items: baseline;
+}
+.dish-price-currency {
+  font-size: 22rpx;
+  color: #e31d1a;
+  margin-right: 2rpx;
+}
+.dish-price {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #e31d1a;
+}
+.dish-price-original {
+  font-size: 22rpx;
+  color: #999999;
+  text-decoration: line-through;
+  margin-left: 10rpx;
+}
+.dish-cart {
+  display: flex;
+  align-items: center;
+}
+.cart-minus {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 2rpx solid #ff7a59;
+  color: #ff7a59;
+  font-size: 32rpx;
+  margin-right: 12rpx;
+  visibility: hidden;
+}
+.cart-minus-show {
+  visibility: visible;
+}
+.cart-minus-text {
+  font-size: 32rpx;
+  color: #ff7a59;
+  font-weight: 600;
+}
+.cart-qty {
+  font-size: 28rpx;
+  color: #1a1a1a;
+  min-width: 36rpx;
+  text-align: center;
+  margin-right: 12rpx;
+  visibility: hidden;
+}
+.cart-qty-show {
+  visibility: visible;
+}
+.cart-plus {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  border-radius: 50%;
+  background-color: #ff7a59;
+  font-size: 32rpx;
+  color: #ffffff;
+}
+.cart-plus-text {
+  font-size: 32rpx;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 底部购物车栏 */
+.footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  background-color: #1f1f1f;
+  color: #ffffff;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #2c2c2c;
+}
+.footer-cart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.footer-cart-icon {
+  font-size: 40rpx;
+  margin-right: 12rpx;
+}
+.footer-cart-text {
+  font-size: 28rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+.footer-checkout {
+  width: 220rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  background-color: #ff7a59;
+  border-radius: 36rpx;
+}
+.footer-checkout-text {
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+===JS===
+Page({
+  data: {
+    restaurantName: '山隐茶事 · 静安店',
+    ratingText: '4.8',
+    monthlySalesText: '2,386',
+    avgPriceText: '88.00',
+    currentCategory: 'tea',
+    currentCategoryBanner: '茶饮主理, 一壶一冲',
+    categories: [
+      { key: 'tea', name: '招牌茶' },
+      { key: 'snack', name: '茶点' },
+      { key: 'set', name: '套餐' },
+      { key: 'dessert', name: '甜品' },
+      { key: 'gift', name: '伴手礼' }
+    ],
+    dishes: [
+      {
+        id: 'd001',
+        coverText: '菜品图',
+        name: '明前龙井 · 单泡',
+        descText: '头采 50g, 玻璃杯现冲, 茶汤清亮豆香足。',
+        tags: ['招牌', '现冲'],
+        priceText: '38.00',
+        originalText: '',
+        qty: 0,
+        qtyText: '0'
+      },
+      {
+        id: 'd002',
+        coverText: '菜品图',
+        name: '凤凰单丛 · 鸭屎香',
+        descText: '广东潮州凤凰山头春茶, 蜜兰香, 回甘悠长。',
+        tags: ['热门'],
+        priceText: '48.00',
+        originalText: '',
+        qty: 0,
+        qtyText: '0'
+      },
+      {
+        id: 'd003',
+        coverText: '菜品图',
+        name: '桂花乌龙冷泡',
+        descText: '12 小时冷泡萃取, 夏日清爽首选。',
+        tags: ['夏日'],
+        priceText: '28.00',
+        originalText: '',
+        qty: 0,
+        qtyText: '0'
+      },
+      {
+        id: 'd004',
+        coverText: '菜品图',
+        name: '古法蛋黄酥',
+        descText: '酥皮千层, 蛋黄流心, 配茶绝配。',
+        tags: ['手工', '当日现做'],
+        priceText: '18.00',
+        originalText: '22.00',
+        qty: 0,
+        qtyText: '0'
+      }
+    ],
+    totalQtyText: '0',
+    totalAmountText: '0.00'
+  },
+
+  onCategoryTap(e) {
+    const key = e.currentTarget.dataset.key;
+    const nameMap = {
+      tea: '茶饮主理, 一壶一冲',
+      snack: '手工茶点, 现烤现做',
+      set: '精选套餐, 高性价比',
+      dessert: '甜品限定, 季节上新',
+      gift: '伴手好礼, 体面有面'
+    };
+    this.setData({
+      currentCategory: key,
+      currentCategoryBanner: nameMap[key] || ''
+    });
+  },
+
+  onPlusTap(e) {
+    const id = e.currentTarget.dataset.id;
+    const list = this.data.dishes.map((d) => {
+      if (d.id === id) {
+        const next = d.qty + 1;
+        return Object.assign({}, d, { qty: next, qtyText: String(next) });
+      }
+      return d;
+    });
+    this.recalcCart(list);
+  },
+
+  onMinusTap(e) {
+    const id = e.currentTarget.dataset.id;
+    const list = this.data.dishes.map((d) => {
+      if (d.id === id && d.qty > 0) {
+        const next = d.qty - 1;
+        return Object.assign({}, d, { qty: next, qtyText: String(next) });
+      }
+      return d;
+    });
+    this.recalcCart(list);
+  },
+
+  recalcCart(list) {
+    let total = 0;
+    let amount = 0;
+    list.forEach((d) => {
+      total += d.qty;
+      amount += d.qty * parseFloat(d.priceText);
+    });
+    this.setData({
+      dishes: list,
+      totalQtyText: String(total),
+      totalAmountText: amount.toFixed(2)
+    });
+  },
+
+  onCartTap() {
+    wx.showToast({ title: '查看购物车', icon: 'none' });
+  },
+
+  onCheckoutTap() {
+    if (parseInt(this.data.totalQtyText, 10) === 0) {
+      wx.showToast({ title: '请先点菜', icon: 'none' });
+      return;
+    }
+    wx.showToast({ title: '去结算', icon: 'success' });
+  }
+});

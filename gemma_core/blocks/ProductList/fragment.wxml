@@ -1,0 +1,14 @@
+<view class="product-list">
+  <view class="product-list__header">
+    <text class="product-list__title">{{productListTitle}}</text>
+    <text class="product-list__sub">{{productListSubtitle}}</text>
+  </view>
+  <view class="product-list__grid">
+    <view class="product-list__item" wx:for="{{productListItems}}" wx:key="id">
+      <view class="product-list__thumb"></view>
+      <text class="product-list__name">{{item.name}}</text>
+      <text class="product-list__desc">{{item.desc}}</text>
+      <text class="product-list__price">{{item.priceText}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,7 @@
+<view class="sticky-bottom-bar">
+  <view class="sticky-bottom-bar__text">
+    <text class="sticky-bottom-bar__title">{{stickyBottomBarTitle}}</text>
+    <text class="sticky-bottom-bar__desc">{{stickyBottomBarDesc}}</text>
+  </view>
+  <button class="sticky-bottom-bar__button" bindtap="onStickyBottomBarTap">{{stickyBottomBarButtonText}}</button>
+</view>

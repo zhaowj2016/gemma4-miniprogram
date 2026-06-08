@@ -1,0 +1,11 @@
+<view class="hero-banner">
+  <swiper class="hero-banner__swiper" current="{{heroBannerCurrent}}" indicator-dots="{{true}}" autoplay="{{true}}" interval="3200" bindchange="onHeroBannerChange">
+    <swiper-item wx:for="{{heroBannerSlides}}" wx:key="id">
+      <view class="hero-banner__slide">
+        <text class="hero-banner__eyebrow">{{item.eyebrow}}</text>
+        <text class="hero-banner__title">{{item.title}}</text>
+        <text class="hero-banner__desc">{{item.desc}}</text>
+      </view>
+    </swiper-item>
+  </swiper>
+</view>

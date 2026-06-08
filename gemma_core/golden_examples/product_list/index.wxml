@@ -1,0 +1,29 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">{{categoryName}}</text>
+    <text class="header-sub">共 {{productCountText}} 件商品</text>
+  </view>
+
+  <scroll-view class="filter-bar" scroll-x="{{true}}">
+    <view class="filter-item {{currentFilter === item.key ? 'filter-item-active' : ''}}" wx:for="{{filters}}" wx:key="key" bindtap="onFilterTap" data-key="{{item.key}}">
+      <text>{{item.name}}</text>
+    </view>
+  </scroll-view>
+
+  <view class="grid">
+    <view class="card" wx:for="{{products}}" wx:key="id" bindtap="onProductTap" data-id="{{item.id}}">
+      <view class="card-cover">
+        <text class="card-cover-placeholder">{{item.coverText}}</text>
+        <text class="card-tag" wx:if="{{item.tagText}}">{{item.tagText}}</text>
+      </view>
+      <view class="card-body">
+        <text class="card-title">{{item.title}}</text>
+        <text class="card-sub">{{item.subText}}</text>
+        <view class="card-price-row">
+          <text class="card-price">¥{{item.priceText}}</text>
+          <text class="card-sales">已售 {{item.salesText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,37 @@
+.empty-state {
+  margin: 0 24rpx 28rpx;
+  padding: 56rpx 32rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  text-align: center;
+}
+.empty-state__icon {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  background: linear-gradient(135deg, #e0f2fe, #dcfce7);
+  margin: 0 auto 24rpx;
+}
+.empty-state__title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #172033;
+}
+.empty-state__desc {
+  display: block;
+  font-size: 26rpx;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-top: 10rpx;
+}
+.empty-state__button {
+  margin-top: 24rpx;
+  width: 240rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 36rpx;
+  background: #1f6feb;
+  color: #ffffff;
+  font-size: 26rpx;
+}

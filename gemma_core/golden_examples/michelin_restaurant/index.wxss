@@ -1,0 +1,347 @@
+/* 全局样式 */
+.page-container {
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* 品牌头部 - 极简白色风格 */
+.brand-header {
+  padding: 60rpx 40rpx 30rpx;
+  text-align: center;
+  background-color: #ffffff;
+}
+.brand-name {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  letter-spacing: 8rpx;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
+}
+.brand-subtitle {
+  font-size: 24rpx;
+  color: #888888;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+}
+
+/* 轮播图 - 电影海报质感 */
+.main-swiper {
+  width: 100%;
+  height: 600rpx;
+  background-color: #000;
+}
+.swiper-item-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.swiper-image {
+  width: 100%;
+  height: 100%;
+}
+.swiper-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 60rpx 40rpx;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: #ffffff;
+}
+.swiper-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+.swiper-desc {
+  font-size: 26rpx;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* 播报栏 - 场景感 */
+.broadcast-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #eeeeee;
+}
+.broadcast-tag {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #b8860b;
+  background-color: #fff;
+  border: 1rpx solid #b8860b;
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+.broadcast-content {
+  flex: 1;
+  white-space: nowrap;
+}
+.broadcast-text {
+  font-size: 26rpx;
+  color: #555555;
+  transition: all 0.3s ease;
+}
+
+/* 菜单区域 */
+.menu-section {
+  flex: 1;
+  padding-bottom: 200rpx;
+}
+.tab-nav {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0;
+  background-color: #ffffff;
+}
+.tab-item {
+  padding: 0 60rpx;
+  font-size: 30rpx;
+  color: #999999;
+  position: relative;
+  transition: color 0.3s;
+}
+.tab-item-active, .tab-active {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+.tab-line {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 4rpx;
+  background-color: #b8860b;
+  transition: width 0.3s ease;
+}
+.tab-active .tab-line {
+  width: 60rpx;
+}
+
+/* 菜单卡片 - 高端圆角与阴影 */
+.menu-list {
+  padding: 0 30rpx;
+}
+.menu-card {
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 12rpx 40rpx rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: 1rpx solid #f0f0f0;
+  transition: transform 0.2s;
+  min-height: 260rpx;
+}
+.menu-card:active {
+  transform: scale(0.98);
+}
+.card-image-box {
+  position: relative;
+  width: 226rpx;
+  height: 260rpx;
+  flex: 0 0 226rpx;
+}
+.card-image {
+  width: 100%;
+  height: 100%;
+}
+.tag-container {
+  position: absolute;
+  top: 20rpx;
+  left: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+.item-tag {
+  font-size: 20rpx;
+  color: #ffffff;
+  background-color: rgba(0,0,0,0.5);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  backdrop-filter: blur(4px);
+}
+.card-info {
+  flex: 1;
+  min-width: 0;
+  padding: 24rpx 24rpx 22rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.info-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14rpx;
+  margin-bottom: 10rpx;
+}
+.item-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.25;
+}
+.item-price {
+  flex: 0 0 auto;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #b8860b;
+  line-height: 1.2;
+}
+.item-desc {
+  font-size: 24rpx;
+  color: #777777;
+  line-height: 1.45;
+  margin-bottom: 18rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 数量控制与按钮 */
+.card-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14rpx;
+  width: 100%;
+  margin-top: auto;
+}
+.qty-control {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 40rpx;
+  padding: 4rpx;
+  flex: 0 0 auto;
+}
+.qty-btn {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 50%;
+  font-size: 32rpx;
+  color: #333;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+}
+.qty-value {
+  width: 48rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.add-btn {
+  width: 144rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  padding: 0;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 24rpx;
+  border-radius: 32rpx;
+  margin: 0;
+  flex: 0 0 144rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* 底部操作栏 - 悬浮感 */
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  padding: 30rpx 40rpx calc(30rpx + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1rpx solid #eeeeee;
+  z-index: 100;
+}
+.cart-summary {
+  display: flex;
+  align-items: center;
+}
+.cart-icon-box {
+  position: relative;
+  width: 80rpx;
+  height: 80rpx;
+  background-color: #f5f5f5;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+.cart-icon {
+  font-size: 40rpx;
+}
+.cart-badge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  background-color: #b8860b;
+  color: #ffffff;
+  font-size: 20rpx;
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 2rpx solid #fff;
+}
+.price-detail {
+  display: flex;
+  flex-direction: column;
+}
+.price-label {
+  font-size: 22rpx;
+  color: #999999;
+}
+.price-total {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.checkout-btn {
+  width: 260rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+  border-radius: 44rpx;
+  margin: 0;
+  box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.2);
+}
+.checkout-btn:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}

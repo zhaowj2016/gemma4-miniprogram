@@ -1,0 +1,40 @@
+.tab-switcher {
+  margin: 0 24rpx 28rpx;
+  padding: 24rpx;
+  border-radius: 22rpx;
+  background: #ffffff;
+}
+.tab-switcher__tabs {
+  display: flex;
+  background: #f3f6fb;
+  border-radius: 18rpx;
+  padding: 8rpx;
+  margin-bottom: 22rpx;
+}
+.tab-switcher__tab {
+  flex: 1;
+  height: 62rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  background: #ffffff;
+  margin-right: 8rpx;
+}
+.tab-switcher__tab-text {
+  font-size: 26rpx;
+  color: #172033;
+}
+.tab-switcher__panel-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #172033;
+}
+.tab-switcher__panel-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-top: 10rpx;
+}

@@ -1,0 +1,12 @@
+<view class="store-info">
+  <text class="store-info__name">{{storeInfoName}}</text>
+  <text class="store-info__desc">{{storeInfoDesc}}</text>
+  <view class="store-info__row">
+    <text class="store-info__label">Hours</text>
+    <text class="store-info__value">{{storeInfoHours}}</text>
+  </view>
+  <view class="store-info__row">
+    <text class="store-info__label">Address</text>
+    <text class="store-info__value">{{storeInfoAddress}}</text>
+  </view>
+</view>

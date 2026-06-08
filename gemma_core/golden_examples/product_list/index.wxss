@@ -1,0 +1,113 @@
+.container {
+  padding-bottom: 40rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+}
+
+/* 顶部标题区 */
+.header {
+  padding: 32rpx 24rpx 20rpx;
+  background-color: #ffffff;
+}
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+.header-sub {
+  display: block;
+  font-size: 24rpx;
+  color: #888888;
+}
+
+/* 横滑筛选条 */
+.filter-bar {
+  white-space: nowrap;
+  padding: 20rpx 24rpx;
+  background-color: #ffffff;
+  border-bottom: 1rpx solid #eeeeee;
+}
+.filter-item {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  margin-right: 16rpx;
+  font-size: 26rpx;
+  color: #555555;
+  background-color: #f5f6f8;
+  border-radius: 30rpx;
+}
+.filter-item-active {
+  background-color: #3a6df0;
+  color: #ffffff;
+}
+
+/* 商品网格 */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16rpx;
+}
+.card {
+  width: calc(50% - 16rpx);
+  margin: 8rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.card-cover {
+  position: relative;
+  width: 100%;
+  height: 340rpx;
+  background: linear-gradient(135deg, #6a8dff, #9b7bff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-cover-placeholder {
+  color: #ffffff;
+  font-size: 28rpx;
+  opacity: 0.85;
+}
+.card-tag {
+  position: absolute;
+  top: 16rpx;
+  left: 16rpx;
+  background-color: #e31d1a;
+  color: #ffffff;
+  font-size: 22rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 6rpx;
+}
+.card-body {
+  padding: 20rpx;
+}
+.card-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+.card-sub {
+  display: block;
+  font-size: 22rpx;
+  color: #999999;
+  margin-bottom: 16rpx;
+}
+.card-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.card-price {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #e31d1a;
+}
+.card-sales {
+  font-size: 22rpx;
+  color: #999999;
+}

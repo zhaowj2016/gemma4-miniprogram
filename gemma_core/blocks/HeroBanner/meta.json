@@ -1,0 +1,14 @@
+{
+  "name": "HeroBanner",
+  "description": "Top carousel hero for campaigns, landing pages, or product launches.",
+  "keywords": ["hero", "banner", "carousel", "swiper", "campaign", "landing", "home", "首页", "横幅", "轮播", "活动"],
+  "requiredData": ["heroBannerCurrent", "heroBannerSlides"],
+  "allowedComponents": ["view", "text", "swiper", "swiper-item"],
+  "defaultData": {
+    "heroBannerCurrent": 0,
+    "heroBannerSlides": [
+      {"id": "h1", "eyebrow": "Featured", "title": "Smart launch kit", "desc": "A polished mini-program section assembled from local mock data."},
+      {"id": "h2", "eyebrow": "New", "title": "Modular page flow", "desc": "Plan, fill, assemble, validate, and repair with stable blocks."}
+    ]
+  }
+}

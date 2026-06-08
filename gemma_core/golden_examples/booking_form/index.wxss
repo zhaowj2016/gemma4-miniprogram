@@ -1,0 +1,153 @@
+.container {
+  padding-bottom: 180rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+}
+
+/* 顶部服务信息 */
+.hero {
+  padding: 40rpx 32rpx;
+  background: linear-gradient(135deg, #3a6df0, #6a8dff);
+  color: #ffffff;
+}
+.hero-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 14rpx;
+}
+.hero-meta {
+  display: flex;
+  align-items: center;
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+.hero-meta-item {
+  margin-right: 8rpx;
+}
+.hero-meta-divider {
+  margin: 0 12rpx;
+  opacity: 0.6;
+}
+
+/* 表单区 */
+.form {
+  padding: 24rpx;
+}
+.field {
+  margin-bottom: 32rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+.label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 20rpx;
+}
+
+/* 日期横滑 */
+.date-row {
+  white-space: nowrap;
+}
+.date-item {
+  display: inline-block;
+  width: 120rpx;
+  height: 120rpx;
+  margin-right: 16rpx;
+  text-align: center;
+  background-color: #f5f6f8;
+  border-radius: 12rpx;
+  padding-top: 22rpx;
+  box-sizing: border-box;
+}
+.date-item-active {
+  background-color: #3a6df0;
+}
+.date-week {
+  display: block;
+  font-size: 24rpx;
+  color: #555555;
+  margin-bottom: 8rpx;
+}
+.date-item-active .date-week {
+  color: #ffffff;
+}
+.date-day {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.date-item-active .date-day {
+  color: #ffffff;
+}
+
+/* 时段网格 */
+.time-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+.time-item {
+  width: calc(33.333% - 16rpx);
+  margin: 8rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  background-color: #f5f6f8;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+.time-item-active {
+  background-color: #eef3ff;
+  color: #3a6df0;
+  font-weight: 600;
+}
+.time-item-disabled {
+  color: #cccccc;
+  background-color: #fafafa;
+}
+
+/* 输入框 */
+.input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  background-color: #f5f6f8;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+.textarea {
+  width: 100%;
+  height: 180rpx;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
+  background-color: #f5f6f8;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+
+/* 底部吸边按钮 */
+.footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  background-color: #ffffff;
+  border-top: 1rpx solid #eeeeee;
+}
+.submit-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background-color: #3a6df0;
+  color: #ffffff;
+  font-size: 32rpx;
+  border-radius: 44rpx;
+}

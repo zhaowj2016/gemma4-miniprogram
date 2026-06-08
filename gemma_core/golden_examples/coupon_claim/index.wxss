@@ -1,0 +1,133 @@
+.container {
+  padding-bottom: 40rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+}
+
+.header {
+  padding: 32rpx 24rpx 20rpx;
+  background-color: #ffffff;
+  margin-bottom: 16rpx;
+}
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+.header-sub {
+  display: block;
+  font-size: 24rpx;
+  color: #888888;
+}
+
+/* 优惠券卡 */
+.coupon-list {
+  padding: 0 24rpx;
+}
+.coupon-card {
+  display: flex;
+  margin-bottom: 20rpx;
+  background: linear-gradient(95deg, #ff7a59 0%, #ff9966 100%);
+  border-radius: 16rpx;
+  overflow: hidden;
+  position: relative;
+}
+.coupon-card-disabled {
+  background: linear-gradient(95deg, #bbbbbb 0%, #cccccc 100%);
+}
+.coupon-left {
+  width: 220rpx;
+  padding: 32rpx 0;
+  text-align: center;
+  color: #ffffff;
+}
+.coupon-amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 8rpx;
+}
+.coupon-currency {
+  font-size: 28rpx;
+  margin-right: 4rpx;
+}
+.coupon-value {
+  font-size: 64rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+.coupon-condition {
+  font-size: 22rpx;
+  opacity: 0.95;
+}
+.coupon-divider {
+  width: 2rpx;
+  background-image: linear-gradient(to bottom, #ffffff 50%, transparent 50%);
+  background-size: 2rpx 16rpx;
+  background-repeat: repeat-y;
+  margin: 16rpx 0;
+}
+.coupon-right {
+  flex: 1;
+  padding: 24rpx 24rpx 24rpx 16rpx;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+.coupon-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 6rpx;
+}
+.coupon-scope {
+  font-size: 22rpx;
+  color: #777777;
+  margin-bottom: 6rpx;
+}
+.coupon-expire {
+  font-size: 20rpx;
+  color: #aaaaaa;
+  margin-bottom: 16rpx;
+}
+.coupon-btn {
+  align-self: flex-end;
+  padding: 12rpx 28rpx;
+  background-color: #ff7a59;
+  border-radius: 30rpx;
+}
+.coupon-btn-disabled {
+  background-color: #dddddd;
+}
+.coupon-btn-text {
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* 规则区 */
+.rule-section {
+  margin: 24rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+}
+.rule-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
+}
+.rule-list {
+  display: flex;
+  flex-direction: column;
+}
+.rule-item {
+  display: block;
+  font-size: 24rpx;
+  color: #777777;
+  line-height: 1.8;
+}

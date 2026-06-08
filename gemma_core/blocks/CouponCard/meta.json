@@ -1,0 +1,14 @@
+{
+  "name": "CouponCard",
+  "description": "Coupon offer card with local claim state.",
+  "keywords": ["coupon", "discount", "offer", "voucher", "promotion", "优惠券", "折扣", "活动", "领取"],
+  "requiredData": ["couponCardAmountText", "couponCardCondition", "couponCardTitle", "couponCardDate", "couponCardButtonText"],
+  "allowedComponents": ["view", "text", "button"],
+  "defaultData": {
+    "couponCardAmountText": "30 OFF",
+    "couponCardCondition": "Over 199",
+    "couponCardTitle": "New customer coupon",
+    "couponCardDate": "Valid for 7 days",
+    "couponCardButtonText": "Claim"
+  }
+}

@@ -1,0 +1,46 @@
+.signup-form {
+  margin: 0 24rpx 28rpx;
+  padding: 32rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+}
+.signup-form__title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #172033;
+}
+.signup-form__desc {
+  display: block;
+  font-size: 26rpx;
+  color: #6b7280;
+  margin-top: 10rpx;
+}
+.signup-form__body {
+  margin-top: 24rpx;
+}
+.signup-form__field {
+  margin-bottom: 18rpx;
+}
+.signup-form__label {
+  display: block;
+  font-size: 24rpx;
+  color: #4b5563;
+  margin-bottom: 10rpx;
+}
+.signup-form__input {
+  height: 84rpx;
+  padding: 0 22rpx;
+  border-radius: 16rpx;
+  background: #f3f6fb;
+  font-size: 28rpx;
+}
+.signup-form__button {
+  margin-top: 10rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  background: #172033;
+  color: #ffffff;
+  font-size: 30rpx;
+}

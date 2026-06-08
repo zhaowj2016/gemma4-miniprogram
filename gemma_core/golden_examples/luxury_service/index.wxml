@@ -1,0 +1,204 @@
+<view class="container">
+  <!-- 顶部搜索与品牌区域 -->
+  <view class="header-section">
+    <view class="brand-header">
+      <view class="brand-info">
+        <text class="brand-name">{{brandName}}</text>
+        <view class="brand-meta">
+          <text class="brand-slogan">{{brandSlogan}}</text>
+          <text class="brand-location">📍 {{brandCity}}</text>
+        </view>
+      </view>
+      <view class="header-actions">
+        <view class="action-icon" bindtap="onMainAction" data-action="search">🔍</view>
+        <view class="action-icon" bindtap="onMainAction" data-action="profile">👤</view>
+      </view>
+    </view>
+
+    <view class="search-bar">
+      <text class="search-icon-emoji">🔍</text>
+      <input class="search-input" placeholder="搜索专属定制服务..." bindinput="onSearchInput" value="{{searchKeyword}}" />
+      <view class="search-btn">搜索</view>
+    </view>
+  </view>
+
+  <!-- 核心指标统计 -->
+  <view class="stats-grid">
+    <view class="stat-item" wx:for="{{stats}}" wx:key="label">
+      <text class="stat-icon" style="color: {{item.color}}">{{item.icon}}</text>
+      <text class="stat-value">{{item.value}}</text>
+      <text class="stat-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <!-- 顶部 Banner 轮播 -->
+  <swiper 
+    class="main-swiper" 
+    indicator-dots="true" 
+    autoplay="true" 
+    circular="true" 
+    current="{{currentBanner}}" 
+    bindchange="onSwiperChange"
+  >
+    <swiper-item wx:for="{{banners}}" wx:key="id">
+      <view class="swiper-item-wrap">
+        <image class="swiper-image" src="{{item.imageUrl}}" mode="aspectFill" />
+        <view class="swiper-mask"></view>
+        <view class="swiper-content">
+          <view class="swiper-tag">{{item.category}}</view>
+          <text class="swiper-title">{{item.title}}</text>
+          <text class="swiper-subtitle">{{item.subtitle}}</text>
+          <view class="swiper-offer">
+            <text class="offer-text">{{item.discount}}</text>
+            <text class="offer-date">至 {{item.endTime}}</text>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <!-- 快捷功能网格 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">尊享类目</text>
+      <text class="section-link">全部类目 ></text>
+    </view>
+    <view class="category-grid">
+      <view 
+        class="category-item {{activeTab === item.id ? 'category-active' : ''}}" 
+        wx:for="{{categories}}" 
+        wx:key="id" 
+        bindtap="onCategoryTap" 
+        data-id="{{item.id}}"
+      >
+        <view class="category-icon">{{item.icon}}</view>
+        <text class="category-name">{{item.name}}</text>
+        <text class="category-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 核心服务区 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">匠心服务</text>
+      <text class="section-link">查看全部 ></text>
+    </view>
+    
+    <scroll-view scroll-y="true" class="service-list">
+      <view class="service-card" wx:for="{{services}}" wx:key="id">
+        <view class="card-image-box">
+          <image class="card-image" src="{{item.image}}" mode="aspectFill" />
+          <view class="card-tag">{{item.tag}}</view>
+          <view class="card-expert-tag">专家: {{item.expert}}</view>
+          <view 
+            class="favorite-btn {{isFavorite[index] ? 'fav-active' : ''}}" 
+            bindtap="toggleFavorite" 
+            data-id="{{item.id}}"
+          >
+            <text class="fav-icon">{{isFavorite[index] ? '❤️' : '🤍'}}</text>
+          </view>
+        </view>
+        
+        <view class="card-body">
+          <view class="card-title-row">
+            <view class="title-group">
+              <text class="card-title">{{item.title}}</text>
+              <view class="rating-box">
+                <text class="star">⭐</text>
+                <text class="rating-val">{{item.rating}}</text>
+                <text class="sales-val">({{item.sales}}人预约)</text>
+              </view>
+            </view>
+            <text class="card-price">¥{{item.price}}</text>
+          </view>
+          <text class="card-desc">{{item.desc}}</text>
+          
+          <view class="card-footer">
+            <view class="footer-meta">
+              <view class="meta-item">
+                <text class="meta-label">城市</text>
+                <text class="meta-value">{{item.city}}</text>
+              </view>
+              <view class="meta-item">
+                <text class="meta-label">时长</text>
+                <text class="meta-value">{{item.duration}}</text>
+              </view>
+            </view>
+            <view class="book-btn" bindtap="onBookService" data-title="{{item.title}}">
+              <text>立即预约</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 推荐套餐 (New Section) -->
+  <view class="section recommendation-section">
+    <view class="section-header">
+      <text class="section-title">尊享套餐</text>
+      <text class="section-link">更多方案 ></text>
+    </view>
+    <scroll-view scroll-x="true" class="rec-scroll">
+      <view class="rec-card" wx:for="{{recommendations}}" wx:key="id">
+        <image class="rec-image" src="{{item.image}}" mode="aspectFill" />
+        <view class="rec-badge">{{item.tag}}</view>
+        <view class="rec-content">
+          <text class="rec-title">{{item.title}}</text>
+          <text class="rec-items">{{item.items}}</text>
+          <view class="rec-price-row">
+            <text class="rec-price">¥{{item.price}}</text>
+            <text class="rec-original">¥{{item.originalPrice}}</text>
+          </view>
+          <view class="rec-btn" bindtap="onBookService" data-title="{{item.title}}">选择此方案</view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 精英会员展示 -->
+  <view class="section member-section">
+    <view class="section-header">
+      <text class="section-title">全球精英俱乐部</text>
+      <text class="section-link">申请加入 ></text>
+    </view>
+    <scroll-view scroll-x="true" class="member-scroll">
+      <view class="member-item" wx:for="{{members}}" wx:key="name">
+        <image class="member-avatar" src="{{item.avatar}}" mode="aspectFill" />
+        <view class="member-info">
+          <view class="member-name-row">
+            <text class="member-name">{{item.name}}</text>
+            <text class="member-city">{{item.city}}</text>
+          </view>
+          <text class="member-level">{{item.level}}</text>
+          <text class="member-points">积分: {{item.points}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 底部固定操作栏 -->
+  <view class="bottom-bar">
+    <view class="nav-item" bindtap="onMainAction" data-action="profile">
+      <text class="nav-icon">👤</text>
+      <text class="nav-text">我的</text>
+    </view>
+    <view class="nav-item" bindtap="onMainAction" data-action="cart">
+      <view class="cart-badge">{{cartCount}}</view>
+      <text class="nav-icon">🛍️</text>
+      <text class="nav-text">预约单</text>
+    </view>
+    <view class="main-cta-btn" bindtap="onBookService" data-title="快捷预约">
+      <text>开启定制之旅</text>
+    </view>
+    <view class="nav-item" bindtap="onMainAction" data-action="search">
+      <text class="nav-icon">🔍</text>
+      <text class="nav-text">发现</text>
+    </view>
+    <view class="nav-item" bindtap="onMainAction" data-action="profile">
+      <text class="nav-icon">⚙️</text>
+      <text class="nav-text">设置</text>
+    </view>
+  </view>
+</view>

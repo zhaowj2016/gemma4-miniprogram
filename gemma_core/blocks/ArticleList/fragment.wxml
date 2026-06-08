@@ -1,0 +1,8 @@
+<view class="article-list">
+  <text class="article-list__title">{{articleListTitle}}</text>
+  <view class="article-list__item" wx:for="{{articleListItems}}" wx:key="id">
+    <text class="article-list__item-title">{{item.title}}</text>
+    <text class="article-list__item-desc">{{item.desc}}</text>
+    <text class="article-list__item-meta">{{item.meta}}</text>
+  </view>
+</view>

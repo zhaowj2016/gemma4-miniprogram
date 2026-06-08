@@ -1,0 +1,11 @@
+<view class="product-info">
+  <text class="product-info__name">{{productInfoName}}</text>
+  <view class="product-info__price-row">
+    <text class="product-info__price">{{productInfoPriceText}}</text>
+    <text class="product-info__badge">{{productInfoBadge}}</text>
+  </view>
+  <text class="product-info__summary">{{productInfoSummary}}</text>
+  <view class="product-info__tags">
+    <text class="product-info__tag" wx:for="{{productInfoTags}}" wx:key="*this">{{item}}</text>
+  </view>
+</view>

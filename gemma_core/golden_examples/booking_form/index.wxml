@@ -1,0 +1,50 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-title">{{serviceName}}</text>
+    <view class="hero-meta">
+      <text class="hero-meta-item">¥{{priceText}}/次</text>
+      <text class="hero-meta-divider">·</text>
+      <text class="hero-meta-item">时长 {{durationText}} 分钟</text>
+    </view>
+  </view>
+
+  <view class="form">
+    <view class="field">
+      <text class="label">选择日期</text>
+      <scroll-view class="date-row" scroll-x="{{true}}">
+        <view class="date-item {{selectedDate === item.dateText ? 'date-item-active' : ''}}" wx:for="{{dateOptions}}" wx:key="dateText" bindtap="onDateTap" data-date="{{item.dateText}}">
+          <text class="date-week">{{item.weekText}}</text>
+          <text class="date-day">{{item.dayText}}</text>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="field">
+      <text class="label">选择时段</text>
+      <view class="time-grid">
+        <view class="time-item {{selectedSlot === item ? 'time-item-active' : ''}} {{item.disabled ? 'time-item-disabled' : ''}}" wx:for="{{slotOptions}}" wx:key="*this" bindtap="onSlotTap" data-slot="{{item}}">
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="label">联系人</text>
+      <input class="input" placeholder="请输入您的姓名" value="{{formData.name}}" bindinput="onNameInput" />
+    </view>
+
+    <view class="field">
+      <text class="label">联系电话</text>
+      <input class="input" type="number" maxlength="11" placeholder="请输入手机号" value="{{formData.phone}}" bindinput="onPhoneInput" />
+    </view>
+
+    <view class="field">
+      <text class="label">备注</text>
+      <textarea class="textarea" placeholder="如有特殊需求请在此说明(选填)" value="{{formData.note}}" bindinput="onNoteInput" />
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="submit-btn" bindtap="onSubmit">确认预约</button>
+  </view>
+</view>

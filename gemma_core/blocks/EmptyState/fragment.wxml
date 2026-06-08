@@ -1,0 +1,6 @@
+<view class="empty-state">
+  <view class="empty-state__icon"></view>
+  <text class="empty-state__title">{{emptyStateTitle}}</text>
+  <text class="empty-state__desc">{{emptyStateDesc}}</text>
+  <button class="empty-state__button" bindtap="onEmptyStateTap">{{emptyStateButtonText}}</button>
+</view>

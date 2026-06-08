@@ -1,0 +1,72 @@
+<view class="container">
+  <view class="hero">
+    <text class="hero-eyebrow">{{departmentText}}</text>
+    <text class="hero-title">{{jobTitle}}</text>
+    <view class="hero-tags">
+      <text class="hero-tag" wx:for="{{tags}}" wx:key="*this">{{item}}</text>
+    </view>
+    <view class="hero-meta">
+      <text class="hero-meta-item">{{locationText}}</text>
+      <text class="hero-meta-divider">·</text>
+      <text class="hero-meta-item">{{experienceText}}</text>
+      <text class="hero-meta-divider">·</text>
+      <text class="hero-meta-item">{{educationText}}</text>
+    </view>
+  </view>
+
+  <view class="info-card">
+    <view class="info-row">
+      <text class="info-label">薪资范围</text>
+      <text class="info-value salary">{{salaryText}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">招聘人数</text>
+      <text class="info-value">{{headcountText}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">发布时间</text>
+      <text class="info-value">{{publishDateText}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">岗位职责</text>
+    <view class="duty-list">
+      <text class="duty-item" wx:for="{{responsibilities}}" wx:key="*this">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">任职要求</text>
+    <view class="duty-list">
+      <text class="duty-item" wx:for="{{requirements}}" wx:key="*this">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">你将获得</text>
+    <view class="benefit-grid">
+      <view class="benefit-item" wx:for="{{benefits}}" wx:key="title">
+        <view class="benefit-icon">
+          <text class="benefit-icon-text">{{item.iconText}}</text>
+        </view>
+        <text class="benefit-title">{{item.title}}</text>
+        <text class="benefit-desc">{{item.descText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">团队介绍</text>
+    <text class="team-text">{{teamText}}</text>
+  </view>
+
+  <view class="footer">
+    <view class="footer-chat" bindtap="onChatTap">
+      <text class="footer-chat-text">咨询 HR</text>
+    </view>
+    <view class="footer-apply" bindtap="onApplyTap">
+      <text class="footer-apply-text">立即投递</text>
+    </view>
+  </view>
+</view>
