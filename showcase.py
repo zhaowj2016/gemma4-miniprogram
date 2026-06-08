@@ -25,6 +25,23 @@ SHOWCASE = [
     ("course_detail",        "📚 课程详情"),
 ]
 
+# 对比展位：AMD vLLM 网关生成效果，"打磨前"与"打磨后"各一栏，
+# 用于直观对比"第 2 步生成"和"第 3 步 31B 自检优化"之间的差距。
+AMD_VLLM_RAW_DIR = os.path.join(os.path.dirname(__file__), "demo_cache", "amd_vllm_demo")
+AMD_VLLM_REVIEWED_DIR = os.path.join(os.path.dirname(__file__), "demo_cache", "amd_vllm_demo_reviewed")
+AMD_VLLM_RAW_LABEL = "🔬 AMD vLLM·打磨前（仅第2步生成）"
+AMD_VLLM_REVIEWED_LABEL = "✨ AMD vLLM·打磨后（含第3步自检）"
+
+
+def _load_demo_dir(dir_path: str) -> dict:
+    result = {}
+    for ext in ("wxml", "wxss", "js"):
+        path = os.path.join(dir_path, f"{ext}.txt")
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                result[ext] = f.read().strip()
+    return result
+
 
 # ── Streamlit UI ─────────────────────────────────────────────────────────────
 
@@ -33,17 +50,34 @@ st.set_page_config(
     page_icon="🎨",
     layout="wide",
 )
-st.title("🎨 Gemma Match · 5 场景效果展示")
+st.title(f"🎨 Gemma Match · {len(SHOWCASE)} 场景效果展示 + 1 个对比展位")
 st.caption(
     "Gemma 4 Native Function Calling 生成的微信小程序代码，"
     "在浏览器中模拟 375px 手机宽度实时渲染。"
 )
 
-tabs = st.tabs([label for _, label in SHOWCASE])
+DEMO_TABS = [
+    (AMD_VLLM_RAW_LABEL, AMD_VLLM_RAW_DIR,
+     "这一栏是 AMD vLLM 网关 31B 模型**单次** generate 调用的原始产出"
+     "（未经过 pipeline 第 3 步 31B 自检优化、也未经自愈重试），"
+     "刻意保留打磨前的样子，方便跟右边一栏对比——能直观看到「自检优化」这一步实际带来了多少提升。"),
+    (AMD_VLLM_REVIEWED_LABEL, AMD_VLLM_REVIEWED_DIR,
+     "这一栏是把左边那份「打磨前」的代码，喂给 AMD vLLM 31B 走完 pipeline 第 3 步"
+     "（`build_review_prompt` 自检优化）之后的产出——和 app.py 实际交付给用户的最终结果是同一条链路、"
+     "同一个模型，可以直接当作「AMD vLLM 全流程最终效果」来看。"),
+]
+all_entries = SHOWCASE + [(None, lbl) for lbl, _, _ in DEMO_TABS]
+all_labels = [label for _, label in SHOWCASE] + [lbl for lbl, _, _ in DEMO_TABS]
+tabs = st.tabs(all_labels)
 
-for tab, (folder, label) in zip(tabs, SHOWCASE):
+for tab, (folder, label) in zip(tabs, all_entries):
     with tab:
-        files = load_golden_from_folder(folder)
+        if folder is None:
+            _, demo_dir, demo_note = next(d for d in DEMO_TABS if d[0] == label)
+            files = _load_demo_dir(demo_dir)
+            st.info(demo_note)
+        else:
+            files = load_golden_from_folder(folder)
         wxml = files.get("wxml", "")
         wxss = files.get("wxss", "")
         js   = files.get("js", "")
