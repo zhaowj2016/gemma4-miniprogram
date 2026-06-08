@@ -1,0 +1,470 @@
+{
+  "version": 1,
+  "generated_by": "scripts/build_image_library.py",
+  "asset_count": 27,
+  "allowed_roots": [
+    "/assets/library/",
+    "/assets/uploads/"
+  ],
+  "assets": [
+    {
+      "asset_id": "coffee_hero_001",
+      "local_path": "/assets/library/coffee/coffee_hero_001.jpg",
+      "industry": "coffee",
+      "role": "hero",
+      "style": "warm editorial cafe",
+      "tags": [
+        "coffee",
+        "cafe",
+        "hero"
+      ],
+      "aspect_ratio": 1.4975,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "2aa47c396b139422a357766be4e7b4445b3cbf5123c61af03ef2b0766433701e"
+    },
+    {
+      "asset_id": "coffee_product_001",
+      "local_path": "/assets/library/coffee/coffee_product_001.jpg",
+      "industry": "coffee",
+      "role": "product",
+      "style": "clean product closeup",
+      "tags": [
+        "coffee",
+        "beans",
+        "product"
+      ],
+      "aspect_ratio": 1.5228,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1497515114629-f71d768fd07c?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "98de90d8269f806e213b39e6afdc63568ff033196cadd7d9345ea4fc7d1871b1"
+    },
+    {
+      "asset_id": "coffee_store_001",
+      "local_path": "/assets/library/coffee/coffee_store_001.jpg",
+      "industry": "coffee",
+      "role": "store",
+      "style": "cozy shop interior",
+      "tags": [
+        "coffee",
+        "store",
+        "interior"
+      ],
+      "aspect_ratio": 0.6667,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "47ad7de975daeb22923048e7c2cc0d347ee75b2d5e937714ae8289c52cb7faeb"
+    },
+    {
+      "asset_id": "restaurant_hero_001",
+      "local_path": "/assets/library/restaurant/restaurant_hero_001.jpg",
+      "industry": "restaurant",
+      "role": "hero",
+      "style": "fine dining warm",
+      "tags": [
+        "restaurant",
+        "food",
+        "hero"
+      ],
+      "aspect_ratio": 1.3333,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "a6d72a85ecb7a6af9690fde3c9f64e07ae8b6dd2249eced6a15348863fb0dc8b"
+    },
+    {
+      "asset_id": "restaurant_product_001",
+      "local_path": "/assets/library/restaurant/restaurant_product_001.jpg",
+      "industry": "restaurant",
+      "role": "product",
+      "style": "dish closeup",
+      "tags": [
+        "restaurant",
+        "dish",
+        "menu"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "c23ef69c1bcb246f02262ada9ef8055c03bba8b0115d43f0a2aef13643457ce6"
+    },
+    {
+      "asset_id": "restaurant_store_001",
+      "local_path": "/assets/library/restaurant/restaurant_store_001.jpg",
+      "industry": "restaurant",
+      "role": "store",
+      "style": "table atmosphere",
+      "tags": [
+        "restaurant",
+        "table",
+        "service"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "eb06e9ff1644dff9d0b3a13e88018aae11f8ee13a38820094853b8f37b5a7b8d"
+    },
+    {
+      "asset_id": "beauty_hero_001",
+      "local_path": "/assets/library/beauty/beauty_hero_001.jpg",
+      "industry": "beauty",
+      "role": "hero",
+      "style": "premium salon",
+      "tags": [
+        "beauty",
+        "salon",
+        "hero"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "e958ebd6eeb1982fb609d1a72f6e8e02b5a5b523aaf8f4b328ca953534665c4a"
+    },
+    {
+      "asset_id": "beauty_service_001",
+      "local_path": "/assets/library/beauty/beauty_service_001.jpg",
+      "industry": "beauty",
+      "role": "service",
+      "style": "hair styling",
+      "tags": [
+        "beauty",
+        "hair",
+        "service"
+      ],
+      "aspect_ratio": 1.3333,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "5305f2913c2c5d2d7367eeceb27fffc9a038c8771e69b8618cba04413befa4d0"
+    },
+    {
+      "asset_id": "beauty_product_001",
+      "local_path": "/assets/library/beauty/beauty_product_001.jpg",
+      "industry": "beauty",
+      "role": "product",
+      "style": "beauty detail",
+      "tags": [
+        "beauty",
+        "makeup",
+        "detail"
+      ],
+      "aspect_ratio": 1.4975,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "800f7bbff36de7441edd34bcdd7f7625ba06843756d4b3598323b028c33a277f"
+    },
+    {
+      "asset_id": "fashion_hero_001",
+      "local_path": "/assets/library/fashion/fashion_hero_001.jpg",
+      "industry": "fashion",
+      "role": "hero",
+      "style": "fashion editorial",
+      "tags": [
+        "fashion",
+        "hero",
+        "lookbook"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "09fad0aae73e60e77ee64a7c97af3919dc401fe038b176cddfead899df93982e"
+    },
+    {
+      "asset_id": "fashion_product_001",
+      "local_path": "/assets/library/fashion/fashion_product_001.jpg",
+      "industry": "fashion",
+      "role": "product",
+      "style": "apparel detail",
+      "tags": [
+        "fashion",
+        "product",
+        "apparel"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "f4d9ca37d5597eeb325e65bb32ce21f09ed4ed2239e354a451004ea9539d6d22"
+    },
+    {
+      "asset_id": "fashion_store_001",
+      "local_path": "/assets/library/fashion/fashion_store_001.jpg",
+      "industry": "fashion",
+      "role": "store",
+      "style": "boutique display",
+      "tags": [
+        "fashion",
+        "store",
+        "boutique"
+      ],
+      "aspect_ratio": 0.6966,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "ab387e382adbcd6dd03938aa785da8e8d3f88631bd0c05757f5a7a9e39779cd5"
+    },
+    {
+      "asset_id": "wedding_hero_001",
+      "local_path": "/assets/library/wedding/wedding_hero_001.jpg",
+      "industry": "wedding",
+      "role": "hero",
+      "style": "fine art wedding",
+      "tags": [
+        "wedding",
+        "hero",
+        "romantic"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "db06501b876441f0e2e1e6e7792101f8c7ac66bb16c0326d48f9261b3dbff285"
+    },
+    {
+      "asset_id": "wedding_event_001",
+      "local_path": "/assets/library/wedding/wedding_event_001.jpg",
+      "industry": "wedding",
+      "role": "event",
+      "style": "ceremony scene",
+      "tags": [
+        "wedding",
+        "ceremony",
+        "event"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "d5b800d4a5b4d944efe4fcd0651218b7b1986a4407abe9df0d727539aade6960"
+    },
+    {
+      "asset_id": "wedding_detail_001",
+      "local_path": "/assets/library/wedding/wedding_detail_001.jpg",
+      "industry": "wedding",
+      "role": "detail",
+      "style": "wedding detail",
+      "tags": [
+        "wedding",
+        "detail",
+        "dress"
+      ],
+      "aspect_ratio": 1.3997,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "434b04ab64e69ff9237088410831e3a78fe8aebcfaf981389e1fee9366266cf2"
+    },
+    {
+      "asset_id": "store_service_hero_001",
+      "local_path": "/assets/library/store_service/store_service_hero_001.jpg",
+      "industry": "store_service",
+      "role": "hero",
+      "style": "service desk",
+      "tags": [
+        "store",
+        "service",
+        "hero"
+      ],
+      "aspect_ratio": 1.4975,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "f1934c5fbead07e5f0495d78da56574d39a21d43d35dbdc0f05e5283098f18b0"
+    },
+    {
+      "asset_id": "store_service_staff_001",
+      "local_path": "/assets/library/store_service/store_service_staff_001.jpg",
+      "industry": "store_service",
+      "role": "staff",
+      "style": "professional portrait",
+      "tags": [
+        "store",
+        "staff",
+        "service"
+      ],
+      "aspect_ratio": 0.6667,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "65460abc99f129319ae17cbf4f26baacb840be7187144b0e16147fa3d2d3eea2"
+    },
+    {
+      "asset_id": "store_service_space_001",
+      "local_path": "/assets/library/store_service/store_service_space_001.jpg",
+      "industry": "store_service",
+      "role": "space",
+      "style": "workspace interior",
+      "tags": [
+        "store",
+        "space",
+        "service"
+      ],
+      "aspect_ratio": 1.4975,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "c6ef3f8974c5d12a22d4c0f0cae60fba4ea149285f68a6e71e9b9eae9bd3aa95"
+    },
+    {
+      "asset_id": "product_general_hero_001",
+      "local_path": "/assets/library/product_general/product_general_hero_001.jpg",
+      "industry": "product_general",
+      "role": "hero",
+      "style": "clean product commerce",
+      "tags": [
+        "product",
+        "commerce",
+        "hero"
+      ],
+      "aspect_ratio": 1.3761,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "8e18a2306bc15ad5cc56f1323882bef4521f79ecf9077dd31bab943c8feb1378"
+    },
+    {
+      "asset_id": "product_general_grid_001",
+      "local_path": "/assets/library/product_general/product_general_grid_001.jpg",
+      "industry": "product_general",
+      "role": "product",
+      "style": "product grid",
+      "tags": [
+        "product",
+        "grid",
+        "shop"
+      ],
+      "aspect_ratio": 1.5101,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "c1796d45b4ae30fd2233981f413408730826ceabdf23c5662407ad75dcc12588"
+    },
+    {
+      "asset_id": "product_general_detail_001",
+      "local_path": "/assets/library/product_general/product_general_detail_001.jpg",
+      "industry": "product_general",
+      "role": "detail",
+      "style": "premium product detail",
+      "tags": [
+        "product",
+        "detail",
+        "commerce"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "f29597a1bf63dd3ae552b4f8437e66109b5dda19393719ca927e4c214c042e47"
+    },
+    {
+      "asset_id": "event_signup_hero_001",
+      "local_path": "/assets/library/event_signup/event_signup_hero_001.jpg",
+      "industry": "event_signup",
+      "role": "hero",
+      "style": "conference audience",
+      "tags": [
+        "event",
+        "signup",
+        "hero"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "42c6173d9256b95943ab02d61b797cca9690d63c7113bc639d9827405450f540"
+    },
+    {
+      "asset_id": "event_signup_speaker_001",
+      "local_path": "/assets/library/event_signup/event_signup_speaker_001.jpg",
+      "industry": "event_signup",
+      "role": "speaker",
+      "style": "speaker portrait",
+      "tags": [
+        "event",
+        "speaker",
+        "signup"
+      ],
+      "aspect_ratio": 0.6667,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "a1faf54f76db3ea64f50dd831f7da24210db499c649c8f3a46e78db06ce96ef7"
+    },
+    {
+      "asset_id": "event_signup_venue_001",
+      "local_path": "/assets/library/event_signup/event_signup_venue_001.jpg",
+      "industry": "event_signup",
+      "role": "venue",
+      "style": "business venue",
+      "tags": [
+        "event",
+        "venue",
+        "signup"
+      ],
+      "aspect_ratio": 1.4975,
+      "source": "unsplash_existing_project_reference",
+      "source_url": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80",
+      "attribution": "Unsplash image URL already present in this project; photographer metadata was not stored in the legacy reference.",
+      "sha256": "c6ef3f8974c5d12a22d4c0f0cae60fba4ea149285f68a6e71e9b9eae9bd3aa95"
+    },
+    {
+      "asset_id": "education_hero_001",
+      "local_path": "/assets/library/education/education_hero_001.jpg",
+      "industry": "education",
+      "role": "hero",
+      "style": "deep blue learning dashboard",
+      "tags": [
+        "education",
+        "course",
+        "hero"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "generated_local",
+      "source_url": "",
+      "attribution": "Generated locally for Gemma Match education placeholder assets.",
+      "sha256": "7da3e8d19f6c13eec5203772fe9029921359d28883ed9410b119cdc8c997d6b4"
+    },
+    {
+      "asset_id": "education_course_001",
+      "local_path": "/assets/library/education/education_course_001.jpg",
+      "industry": "education",
+      "role": "course",
+      "style": "clean course card",
+      "tags": [
+        "education",
+        "lesson",
+        "course"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "generated_local",
+      "source_url": "",
+      "attribution": "Generated locally for Gemma Match education placeholder assets.",
+      "sha256": "f7c6cc5b9c4a947b79c03a7d268dd382ce4a9ff35671862ef800fe9a456bbf44"
+    },
+    {
+      "asset_id": "education_teacher_001",
+      "local_path": "/assets/library/education/education_teacher_001.jpg",
+      "industry": "education",
+      "role": "teacher",
+      "style": "mentor profile panel",
+      "tags": [
+        "education",
+        "teacher",
+        "profile"
+      ],
+      "aspect_ratio": 1.5,
+      "source": "generated_local",
+      "source_url": "",
+      "attribution": "Generated locally for Gemma Match education placeholder assets.",
+      "sha256": "23c1198f03522f5e31a8e23c8c26307d755f9bde513bc82cd3dcfd7ab426bad8"
+    }
+  ]
+}

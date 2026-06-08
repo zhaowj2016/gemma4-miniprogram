@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 ROOT = Path(__file__).resolve().parent
@@ -47,6 +48,9 @@ BENCHMARK_PATH = GEMMA_CORE / "benchmark_prompts.json"
 GOLDEN_DIR = GEMMA_CORE / "golden_examples"
 LOG_PATH = ROOT / "demo_cache" / "gemma.log"
 AMD_CONFIG_PATH = Path(r"E:\file+desktop\gemma_amd_config.txt")
+LIVE_SAMPLE_DIR = ROOT / "demo_cache" / "live_samples"
+LIVE_SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+LATEST_SAMPLE_PATH = LIVE_SAMPLE_DIR / "latest.json"
 
 DEFAULT_EXAMPLES = [
     ("咖啡店点单页", "生成一个咖啡店点单小程序页面，包含门店封面、分类 Tab、商品列表、购物车和底部结算栏。"),
@@ -58,6 +62,27 @@ DEFAULT_EXAMPLES = [
 
 def _safe_get(obj, key, default=None):
     return obj.get(key, default) if isinstance(obj, dict) else default
+
+
+def _persist_live_sample(page_files: dict | None, prompt: str = "", trace_data: list | None = None) -> None:
+    if not page_files:
+        return
+    payload = {
+        "saved_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "prompt": prompt,
+        "files": page_files,
+        "trace_data": trace_data or [],
+    }
+    LATEST_SAMPLE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _load_latest_live_sample() -> dict | None:
+    if not LATEST_SAMPLE_PATH.exists():
+        return None
+    try:
+        return json.loads(LATEST_SAMPLE_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def _line_count(text: str) -> int:
@@ -331,8 +356,7 @@ def _render_phone(page_files: dict[str, str] | None) -> None:
             app_wxss=APP_WXSS,
             user_images=assets_to_preview_images(_safe_get(page_files, "assets", [])),
         )
-        b64 = base64.b64encode(html.encode("utf-8")).decode("ascii")
-        st.iframe(f"data:text/html;base64,{b64}", height=720)
+        components.html(html, height=720, scrolling=True)
     except Exception as exc:
         st.error(f"Preview render failed: {exc}")
 
@@ -342,6 +366,14 @@ def _result_line_summary(page_files: dict | None) -> str:
     wxss_l = _line_count(_safe_get(page_files, "wxss", ""))
     js_l = _line_count(_safe_get(page_files, "js", ""))
     return f"WXML {wxml_l} 行 · WXSS {wxss_l} 行 · JS {js_l} 行 · 共 {wxml_l + wxss_l + js_l} 行"
+
+
+def _has_core_page_files(page_files: dict | None) -> bool:
+    return bool(
+        _safe_get(page_files, "wxml", "").strip()
+        and _safe_get(page_files, "wxss", "").strip()
+        and _safe_get(page_files, "js", "").strip()
+    )
 
 
 def _run_generation(
@@ -386,6 +418,7 @@ def _run_generation(
             page_files = call_gemma_with_tools(built_prompt, image_list=img_list or None, mode=mode)
             page_files["assets"] = uploaded_assets
             page_files["library_assets"] = library_assets
+            page_files = attach_assets_and_fallback(page_files, uploaded_assets, library_assets)
 
             if page_files.get("fallback_used"):
                 actual_label = _PROVIDER_DISPLAY.get(page_files.get("provider"), page_files.get("provider"))
@@ -405,36 +438,39 @@ def _run_generation(
                 repair_summary = "Validator hard errors were sent back to Gemma for one repair pass"
                 st.write(f"⚠️ 发现 {len(validation.hard_errors)} 个问题：{' · '.join(validation.hard_errors[:2])}{'...' if len(validation.hard_errors) > 2 else ''}")
                 st.write("🔧 启动自愈，重新调用模型修复...")
+                original_page_files = page_files
+                original_validation = validation
                 try:
                     repair_prompt = build_repair_prompt(prompt, page_files, validation.hard_errors)
                     repaired = call_gemma_with_tools(repair_prompt, mode=mode)
                     repaired["assets"] = uploaded_assets
                     repaired["library_assets"] = library_assets
+                    repaired = attach_assets_and_fallback(repaired, uploaded_assets, library_assets)
                     repaired_validation = validate_project(_validator_files(repaired), full_project=False)
-                    page_files = repaired
-                    validation = repaired_validation
                     if repaired_validation.ok:
+                        page_files = repaired
+                        validation = repaired_validation
                         repair_status = "success"
-                        repair_summary = "Repaired validator hard errors — code now passes"
+                        repair_summary = "Repaired validator hard errors - code now passes"
                         st.write(f"✅ 自愈成功，代码通过校验 · {_result_line_summary(page_files)}")
                     else:
                         repair_status = "warning"
-                        repair_summary = "Repair attempted; still has issues — fell back to nearest golden example"
-                        st.write("⚠️ 自愈后仍有问题，回退到最相近的黄金样例")
-                        page_files = get_golden_example(prompt)
-                        page_files["assets"] = uploaded_assets
-                        page_files["library_assets"] = library_assets
-                        validation = validate_project(_validator_files(page_files), full_project=False)
-                        used_fallback = True
+                        if len(repaired_validation.hard_errors) <= len(original_validation.hard_errors):
+                            page_files = repaired
+                            validation = repaired_validation
+                            kept = "repaired model output"
+                        else:
+                            page_files = original_page_files
+                            validation = original_validation
+                            kept = "original model output"
+                        repair_summary = f"Repair attempted; still has validator issues - keeping {kept} instead of template fallback"
+                        st.write("⚠️ 自愈后仍有问题，但已保留模型生成结果，避免回退成固定模板。")
                 except Exception:
                     repair_status = "warning"
-                    repair_summary = "Repair call failed — fell back to nearest golden example"
-                    st.write("⚠️ 自愈调用失败，回退到黄金样例")
-                    page_files = get_golden_example(prompt)
-                    page_files["assets"] = uploaded_assets
-                    page_files["library_assets"] = library_assets
-                    validation = validate_project(_validator_files(page_files), full_project=False)
-                    used_fallback = True
+                    repair_summary = "Repair call failed - keeping original model output instead of template fallback"
+                    page_files = original_page_files
+                    validation = original_validation
+                    st.write("⚠️ 自愈调用失败，但已保留模型生成结果，避免回退成固定模板。")
 
             status.update(label="✅ 生成完成", state="complete")
     except Exception as exc:
@@ -445,6 +481,7 @@ def _run_generation(
         page_files = get_golden_example(prompt)
         page_files["assets"] = uploaded_assets
         page_files["library_assets"] = library_assets
+        page_files = attach_assets_and_fallback(page_files, uploaded_assets, library_assets)
         validation = validate_project(_validator_files(page_files), full_project=False)
         used_fallback = True
         error = None
@@ -466,6 +503,11 @@ def _run_generation(
         elapsed=elapsed,
         error=error,
         img_count=img_count,
+    )
+    _persist_live_sample(
+        st.session_state.page_files,
+        prompt=prompt,
+        trace_data=st.session_state.trace_data,
     )
     st.session_state.last_prompt = prompt
     st.session_state.raw_debug = {
@@ -718,6 +760,21 @@ if st.session_state.validation is None:
     st.session_state.validation = _blank_validation()
 if st.session_state.trace_data is None:
     st.session_state.trace_data = _empty_trace(st.session_state.input_prompt)
+if not st.session_state.page_files:
+    _latest_sample = _load_latest_live_sample()
+    if isinstance(_latest_sample, dict) and isinstance(_latest_sample.get("files"), dict):
+        st.session_state.page_files = _latest_sample["files"]
+        if _latest_sample.get("prompt") and not st.session_state.input_prompt:
+            st.session_state.input_prompt = _latest_sample["prompt"]
+        if isinstance(_latest_sample.get("trace_data"), list) and _latest_sample["trace_data"]:
+            st.session_state.trace_data = _latest_sample["trace_data"]
+        st.session_state.raw_debug.setdefault("restored_sample", str(LATEST_SAMPLE_PATH))
+else:
+    _persist_live_sample(
+        st.session_state.page_files,
+        prompt=st.session_state.input_prompt,
+        trace_data=st.session_state.trace_data,
+    )
 
 st.markdown(
     f"""
@@ -1028,8 +1085,22 @@ if page_files:
     # WeChat CI deploy — shown when user clicks the button above
     if st.session_state.get("_show_deploy"):
         st.subheader("📱 上传到微信预览")
-        from ci_deployer import deploy_to_wechat, load_deploy_config, save_deploy_config, clear_deploy_config
+        from ci_deployer import deploy_to_wechat, load_deploy_config, save_deploy_config, clear_deploy_config, get_local_preview_summary
         _saved_cfg = load_deploy_config()
+        _preview_summary = get_local_preview_summary()
+        st.caption(
+            f"本机今天看起来成功生成的预览二维码：{_preview_summary['successful_qr_files']} 个 "
+            f"(全部 preview.jpg：{_preview_summary['all_qr_files']} 个)。日志目录：`{_preview_summary['log_dir']}`"
+        )
+        _robot = st.number_input(
+            "微信 CI robot",
+            min_value=1,
+            max_value=30,
+            value=1,
+            step=1,
+            help="miniprogram-ci 支持 1-30 号 robot。若遇到频率/次数限制，可换一个 robot 试一次；如果 AppID 总限额满了，换 robot 也不会恢复。",
+            key="_demo_deploy_robot",
+        )
 
         if _saved_cfg:
             st.info(f"已保存凭证 · AppID: `{_saved_cfg['appid']}`")
@@ -1043,7 +1114,7 @@ if page_files:
             if _do_deploy:
                 with st.spinner("正在上传到微信服务器..."):
                     try:
-                        qr_path = deploy_to_wechat(page_files, _saved_cfg["appid"], _saved_cfg["private_key"])
+                        qr_path = deploy_to_wechat(page_files, _saved_cfg["appid"], _saved_cfg["private_key"], robot=int(_robot))
                         st.success("✅ 预览二维码生成成功！用微信扫码即可在手机上预览。")
                         st.image(qr_path, width=240)
                     except Exception as e:
@@ -1065,7 +1136,7 @@ if page_files:
                 else:
                     with st.spinner("正在上传到微信服务器..."):
                         try:
-                            qr_path = deploy_to_wechat(page_files, wechat_appid.strip(), wechat_key.strip())
+                            qr_path = deploy_to_wechat(page_files, wechat_appid.strip(), wechat_key.strip(), robot=int(_robot))
                             if _remember:
                                 save_deploy_config(wechat_appid.strip(), wechat_key.strip())
                                 st.success("✅ 预览二维码生成成功！凭证已保存，下次一键部署。")

@@ -7,6 +7,10 @@ GOLDEN_DIR = pathlib.Path(__file__).parent / "gemma_core" / "golden_examples"
 # Keywords are merged from the original list and gemma_core/corpus_index.json.
 # More keywords improve keyword-match accuracy for the 19-scenario fallback.
 SCENARIO_KEYWORDS = {
+    "coffee_shop": [
+        "咖啡", "咖啡店", "点单", "咖啡点单", "饮品", "奶茶", "手冲", "购物车",
+        "coffee", "cafe", "drink", "ordering",
+    ],
     "product_detail": [
         "商品详情", "详情页", "购买", "划线价",
         "商品", "价格", "商城", "加购", "购物车", "电商",
@@ -69,7 +73,7 @@ SCENARIO_KEYWORDS = {
     ],
     "restaurant_menu": [
         "点餐", "餐厅", "菜品", "加减号",
-        "菜单", "美食", "餐饮", "menu",
+        "菜单", "美食", "餐饮", "下单", "restaurant", "menu",
     ],
     "portfolio": [
         "作品集", "设计师", "案例", "流程",
@@ -107,15 +111,15 @@ HIGH_QUALITY_KEYWORDS = {
 }
 
 
-def _select_high_quality_folder(user_prompt: str) -> str:
-    """按关键词命中数挑出最相关的高质量样例目录；无命中默认 product_detail。"""
+def _select_high_quality_folder(user_prompt: str) -> str | None:
+    """Pick a high-quality fallback only when the prompt clearly matches it."""
     prompt_lower = user_prompt.lower()
     best, best_hits = "product_detail", -1
     for folder, keywords in HIGH_QUALITY_KEYWORDS.items():
         hits = sum(1 for kw in keywords if kw.lower() in prompt_lower)
         if hits > best_hits:
             best, best_hits = folder, hits
-    return best
+    return best if best_hits > 0 else None
 
 
 def load_high_quality_example(folder_name: str) -> dict:
@@ -136,10 +140,17 @@ def get_golden_example(user_prompt: str) -> dict:
     _legacy_get_golden_example_19() 调用，作为高质量样例缺失时的二级兜底。
     Returns: {'wxml': '...', 'wxss': '...', 'js': '...'}
     """
+    prompt_lower = user_prompt.lower()
+    if any(word in prompt_lower for word in ("咖啡", "咖啡店", "奶茶", "饮品", "coffee", "cafe")):
+        return _legacy_get_golden_example_19("coffee_shop 咖啡 咖啡店 点单")
+    if any(word in prompt_lower for word in ("餐厅", "菜单", "菜品", "点餐", "美食", "restaurant", "menu")):
+        return _legacy_get_golden_example_19("restaurant_menu 餐厅 菜单 点餐 菜品")
+
     folder = _select_high_quality_folder(user_prompt)
-    files = load_high_quality_example(folder)
-    if all(files.values()):
-        return files
+    if folder:
+        files = load_high_quality_example(folder)
+        if all(files.values()):
+            return files
     # 高质量样例文件缺失时，回退到旧 19 样例容器
     return _legacy_get_golden_example_19(user_prompt)
 
