@@ -85,27 +85,89 @@ SCENARIO_KEYWORDS = {
     ],
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 高质量黄金样例（兜底输出现已改用这 3 个；旧 19 个样例仍完整保留在
+# gemma_core/golden_examples 作为「容器/备用」，见 _legacy_get_golden_example_19）。
+# ─────────────────────────────────────────────────────────────────────────────
+HIGH_QUALITY_DIR = pathlib.Path(__file__).parent / "golden_examples" / "high_quality"
+
+HIGH_QUALITY_KEYWORDS = {
+    "product_detail": [
+        "商品", "详情", "商品详情", "购买", "下单", "价格", "商城", "电商",
+        "加购", "购物车", "规格", "product",
+    ],
+    "event_signup": [
+        "活动", "报名", "活动报名", "报名表", "表单", "嘉宾", "日程",
+        "峰会", "大会", "沙龙", "讲座", "赛事", "马拉松", "event", "signup",
+    ],
+    "store_booking": [
+        "门店", "预约", "门店预约", "预订", "到店", "时段", "档期", "服务预约",
+        "美容", "美发", "美容店", "宠物", "spa", "理发", "booking", "reservation",
+    ],
+}
+
+
+def _select_high_quality_folder(user_prompt: str) -> str:
+    """按关键词命中数挑出最相关的高质量样例目录；无命中默认 product_detail。"""
+    prompt_lower = user_prompt.lower()
+    best, best_hits = "product_detail", -1
+    for folder, keywords in HIGH_QUALITY_KEYWORDS.items():
+        hits = sum(1 for kw in keywords if kw.lower() in prompt_lower)
+        if hits > best_hits:
+            best, best_hits = folder, hits
+    return best
+
+
+def load_high_quality_example(folder_name: str) -> dict:
+    """读取 golden_examples/high_quality/<folder> 下的三件套。"""
+    target_dir = HIGH_QUALITY_DIR / folder_name
+    result = {}
+    for ext in ("wxml", "wxss", "js"):
+        path = target_dir / f"index.{ext}"
+        result[ext] = path.read_text(encoding="utf-8").strip() if path.exists() else ""
+    return result
+
+
 def get_golden_example(user_prompt: str) -> dict:
     """
-    Returns the fallback golden example based on keyword matching in the prompt.
-    Matches across 19 different scenarios to provide highly tailored context.
+    兜底输出（模型彻底失败时直接交付给用户的代码）。
+    现已切换为 3 个「高质量黄金样例」，避免旧样例的 AI 味。
+    旧 19 个样例仍保留在 gemma_core/golden_examples，可通过
+    _legacy_get_golden_example_19() 调用，作为高质量样例缺失时的二级兜底。
+    Returns: {'wxml': '...', 'wxss': '...', 'js': '...'}
+    """
+    folder = _select_high_quality_folder(user_prompt)
+    files = load_high_quality_example(folder)
+    if all(files.values()):
+        return files
+    # 高质量样例文件缺失时，回退到旧 19 样例容器
+    return _legacy_get_golden_example_19(user_prompt)
+
+
+def _legacy_get_golden_example_19(user_prompt: str) -> dict:
+    """
+    [已停用为默认兜底，保留为容器/二级备用]
+    旧版兜底：在 19 个场景样例里按关键词匹配。
     Returns: {'wxml': '...', 'wxss': '...', 'js': '...'}
     """
     prompt_lower = user_prompt.lower()
-    
+
     best_match = "product_detail" # default fallback
     max_hits = 0
-    
+
     for scenario, keywords in SCENARIO_KEYWORDS.items():
         hits = sum(1 for kw in keywords if kw in prompt_lower)
         if hits > max_hits:
             max_hits = hits
             best_match = scenario
-            
+
     return load_golden_from_folder(best_match)
 
 def load_golden_from_folder(folder_name: str) -> dict:
-    target_dir = GOLDEN_DIR / folder_name
+    return load_golden_from_path(GOLDEN_DIR / folder_name)
+
+
+def load_golden_from_path(target_dir: pathlib.Path) -> dict:
     
     result = {}
     for ext in ['wxml', 'wxss', 'js']:

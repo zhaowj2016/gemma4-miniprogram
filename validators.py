@@ -39,7 +39,8 @@ from pathlib import Path
 # 配置: 白名单 / 黑名单
 # ---------------------------------------------------------------------------
 
-ALLOWED_SUFFIXES = {".json", ".js", ".wxml", ".wxss", ".wxs"}
+IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg"}
+ALLOWED_SUFFIXES = {".json", ".js", ".wxml", ".wxss", ".wxs"} | IMAGE_SUFFIXES
 
 # 模型本轮必须生成的三个页面文件 (脚手架其余文件由后端固定写入, 不让模型碰)
 REQUIRED_PAGE_FILES = [
@@ -202,6 +203,62 @@ def _check_wxml(files: dict[str, str], r: ValidationResult) -> None:
                 r.warn(f"{path}: <{tag}> 开合标签数量不一致 (开{opens}/合{closes}), 请人工确认")
 
 
+def _normalize_asset_path(src: str) -> str:
+    return (src or "").strip().replace("\\", "/").lstrip("/")
+
+
+def _local_library_exists(norm_path: str) -> bool:
+    if not norm_path.startswith("assets/library/"):
+        return False
+    return (Path(__file__).resolve().parent / norm_path).is_file()
+
+
+def _check_image_srcs(files: dict[str, str], r: ValidationResult) -> None:
+    available = {p.replace("\\", "/").lstrip("/") for p in files}
+    polluted_patterns = [
+        ("blob:", "blob 临时地址"),
+        ("localhost", "localhost 网页地址"),
+        ("127.0.0.1", "127.0.0.1 网页地址"),
+        ("/tmp", "tmp 临时路径"),
+        ("data:image", "base64 图片"),
+        ("streamlit", "Streamlit 临时路径"),
+        ("images.unsplash.com", "Unsplash 远程图"),
+        ("source.unsplash.com", "Unsplash 随机图"),
+        ("unsplash.com", "Unsplash 远程图"),
+        ("picsum.photos", "Picsum 随机图"),
+    ]
+
+    for path, content in files.items():
+        if not path.endswith(".wxml"):
+            continue
+        for tag in re.finditer(r"<image\b[^>]*>", content, re.IGNORECASE | re.DOTALL):
+            raw_tag = tag.group(0)
+            m = re.search(r"\bsrc\s*=\s*([\"'])(.*?)\1", raw_tag, re.IGNORECASE | re.DOTALL)
+            if not m:
+                continue
+            src = m.group(2).strip()
+            if not src:
+                r.err(f"{path}: <image> src 为空")
+                continue
+            low = src.lower()
+            if src.startswith("{{"):
+                r.warn(f"{path}: <image> src 使用动态绑定，无法逐项验证真实图片文件: {src[:60]}")
+                continue
+            if low.startswith("http://") or low.startswith("https://"):
+                r.err(f"{path}: <image> src 使用远程 URL，真实小程序资源链路不稳定: {src[:90]}")
+                continue
+            hit = next((label for needle, label in polluted_patterns if needle in low), None)
+            if hit:
+                r.err(f"{path}: <image> src 使用了{hit}: {src[:90]}")
+                continue
+            norm = _normalize_asset_path(src)
+            if not (norm.startswith("assets/library/") or norm.startswith("assets/uploads/")):
+                r.err(f"{path}: <image> src 必须是 /assets/library/... 或 /assets/uploads/...: {src[:90]}")
+                continue
+            if norm not in available and not _local_library_exists(norm):
+                r.err(f"{path}: <image> src 指向的文件不存在于项目资源中: {src}")
+
+
 def _check_wxss(files: dict[str, str], r: ValidationResult) -> None:
     for path, content in files.items():
         if not path.endswith(".wxss"):
@@ -266,6 +323,20 @@ def _check_project_config(files: dict[str, str], r: ValidationResult) -> None:
         return
     if "YOUR_APPID" in cfg or '"appid": ""' in cfg or '"appid":""' in cfg:
         r.warn('project.config.json 的 appid 是占位符 —— 建议改成 "touristappid" 以便无账号干净导入')
+    try:
+        parsed = json.loads(cfg)
+    except Exception:
+        return
+    ignore = (parsed.get("packOptions") or {}).get("ignore") or []
+    for item in ignore:
+        value = ""
+        if isinstance(item, dict):
+            value = str(item.get("value", ""))
+        else:
+            value = str(item)
+        low = value.lower().replace("\\", "/")
+        if any(token in low for token in ("assets", "uploads", ".jpg", ".jpeg", ".png", ".webp")):
+            r.err(f"project.config.json: packOptions.ignore 会排除小程序图片资源: {value}")
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +357,7 @@ def validate_project(files: dict[str, str], full_project: bool | None = None) ->
     app_json = _check_json(files, r)
     _check_app_json_pages(app_json, files, r)
     _check_wxml(files, r)
+    _check_image_srcs(files, r)
     _check_wxss(files, r)
     _check_js_basic(files, r)
     _check_event_binding(files, r)

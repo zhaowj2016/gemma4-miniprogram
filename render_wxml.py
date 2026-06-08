@@ -3,7 +3,8 @@ Shared WXML → HTML rendering helpers used by app.py and showcase.py.
 """
 import re
 import json
-import hashlib
+import mimetypes
+from pathlib import Path
 
 PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='375' height='200'%3E%3Crect width='375' height='200' fill='%23e8eaed'/%3E%3Ctext x='188' y='107' text-anchor='middle' fill='%23aaa' font-size='13' font-family='Arial'%3EImage%3C/text%3E%3C/svg%3E"
 
@@ -314,7 +315,7 @@ def expand_for_loops(html: str, data: dict) -> str:
         pos = close_end
         alias_m    = re.search(r'wx:for-item="([^"]+)"', open_tag)
         item_alias = alias_m.group(1) if alias_m else "item"
-        clean_open = re.sub(r'\s+wx:(?:for|key|for-item|for-index)(?:="[^"]*")?', "", open_tag)
+        clean_open = re.sub(r'\s+wx:[\w-]+(?:="[^"]*")?', "", open_tag)
 
         # ── dict[variable] pattern: pre-render all Tab sections ──────────────
         # e.g. wx:for="{{menu[activeTab]}}" → render menu.tasting + menu.alacarte
@@ -425,9 +426,23 @@ def apply_wx_if(html: str, data: dict | None = None) -> str:
 def wxml_to_html(wxml: str, data: dict) -> str:
     h = wxml
     # Handle swiper before the generic tag_map so they get identifying classes
-    h = re.sub(r'<swiper-item\b', r'<div class="wx-swiper-item"', h)
+    def merge_component_class(html_tag: str, wx_class: str):
+        def repl(m):
+            attrs = m.group(1)
+            cls_m = re.search(r'\sclass="([^"]*)"', attrs)
+            if cls_m:
+                classes = cls_m.group(1).split()
+                if wx_class not in classes:
+                    classes.insert(0, wx_class)
+                attrs = attrs[:cls_m.start()] + f' class="{" ".join(classes)}"' + attrs[cls_m.end():]
+            else:
+                attrs = f' class="{wx_class}"{attrs}'
+            return f"<{html_tag}{attrs}>"
+        return repl
+
+    h = re.sub(r'<swiper-item\b([^>]*)>', merge_component_class("div", "wx-swiper-item"), h)
     h = re.sub(r'</swiper-item>', r'</div>', h)
-    h = re.sub(r'<swiper\b', r'<div class="wx-swiper"', h)
+    h = re.sub(r'<swiper\b([^>]*)>', merge_component_class("div", "wx-swiper"), h)
     h = re.sub(r'</swiper>', r'</div>', h)
     tag_map = [
         ("scroll-view", "div"),
@@ -447,11 +462,10 @@ def wxml_to_html(wxml: str, data: dict) -> str:
             src = PLACEHOLDER_IMG
         cls_m = re.search(r'class="([^"]*)"', attrs)
         cls = f' class="{cls_m.group(1)}"' if cls_m else ""
-        # Inline onerror catches images that fail before the JS event listener attaches
-        seed = hashlib.md5(src.encode()).hexdigest()[:6]
+        # Inline onerror catches images that fail before the JS event listener attaches.
         onerror = (
-            f"if(!this.src.includes('picsum')&&!this.src.startsWith('data:'))"
-            f"{{this.onerror=null;this.src='https://picsum.photos/seed/{seed}/375/200';}}"
+            "if(!this.src.startsWith('data:'))"
+            f"{{this.onerror=null;this.src='{PLACEHOLDER_IMG}';}}"
         )
         return f'<img{cls} src="{src}" style="display:block;width:100%;object-fit:cover;" onerror="{onerror}" />'
 
@@ -467,7 +481,7 @@ def wxml_to_html(wxml: str, data: dict) -> str:
         lambda m2: f" onclick=\"__wx('{m2.group(1)}', this, event)\"",
         h,
     )
-    h = re.sub(r"\s+wx:\w+(?:=\"[^\"]*\")?", "", h)
+    h = re.sub(r"\s+wx:[\w-]+(?:=\"[^\"]*\")?", "", h)
     h = re.sub(r"\s+(?:bind|catch|mut-bind|capture-bind)\w+=\"[^\"]*\"", "", h)
     h = re.sub(r"\s+(?:indicator-dots|autoplay|interval|circular)=\"[^\"]*\"", "", h)
     h = re.sub(r"\{\{[^}]+\}\}", "", h)
@@ -497,6 +511,32 @@ def render_phone_html(
             b64 = _b64.b64encode(img_bytes).decode("ascii")
             user_img_uris.append(f"data:{mime_type};base64,{b64}")
     user_imgs_json = json.dumps(user_img_uris)
+
+    if user_img_uris:
+        for idx, uri in enumerate(user_img_uris, start=1):
+            asset_pattern = rf'(["\'])(/?assets/uploads/user_upload_{idx:03d}\.[A-Za-z0-9]+)\1'
+            body = re.sub(asset_pattern, lambda m, u=uri: f'{m.group(1)}{u}{m.group(1)}', body)
+
+    # Inline curated local library assets for the browser preview. Real mini-program
+    # builds still reference the project files under assets/library.
+    root = Path(__file__).resolve().parent
+
+    def _inline_local_asset(match):
+        quote = match.group(1)
+        rel = match.group(2).lstrip("/").replace("\\", "/")
+        fpath = root / rel
+        if not fpath.is_file():
+            return match.group(0)
+        mime_type = mimetypes.guess_type(str(fpath))[0] or "image/jpeg"
+        uri = "data:" + mime_type + ";base64," + _b64.b64encode(fpath.read_bytes()).decode("ascii")
+        return f"{quote}{uri}{quote}"
+
+    body = re.sub(
+        r'(["\'])(/?assets/library/[^"\']+\.(?:jpg|jpeg|png|webp|gif|bmp|svg))\1',
+        _inline_local_asset,
+        body,
+        flags=re.IGNORECASE,
+    )
 
     # Escape </script> in the embedded page JS to prevent early tag close
     safe_js = js.replace("</script>", r"<\/script>")
@@ -614,19 +654,19 @@ def render_phone_html(
   (function() {{
     var uImgs = {user_imgs_json};
     if (!uImgs.length) return;
-    var imgs = document.querySelectorAll('.screen img[src*="unsplash"],.screen img[src*="images."]');
+    var imgs = document.querySelectorAll('.screen img[src*="unsplash"],.screen img[src*="images."],.screen img[src^="/assets/uploads/"],.screen img[src^="assets/uploads/"]');
     if (!imgs.length) imgs = document.querySelectorAll('.screen img');
     imgs.forEach(function(img, i) {{ if (i < uImgs.length) img.src = uImgs[i]; }});
   }})();
 
   // ── Image Error Fallback ──────────────────────────────────────────────────
   document.querySelectorAll('.screen img').forEach(function(img, i) {{
-    var fb = 'https://picsum.photos/seed/fb' + (i + 1) + '/375/200';
+    var fb = '{PLACEHOLDER_IMG}';
     if (img.complete && img.naturalWidth === 0) {{
       img.src = fb;
     }} else {{
       img.addEventListener('error', function() {{
-        if (!this.src.includes('picsum') && !this.src.startsWith('data:')) {{
+        if (!this.src.startsWith('data:')) {{
           this.onerror = null; this.src = fb;
         }}
       }});

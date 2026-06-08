@@ -2,8 +2,12 @@ import os
 import subprocess
 import tempfile
 import json
+import shutil
+from pathlib import Path
 
 _CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "deploy_config.json")
+_ROOT = Path(__file__).resolve().parent
+_LIBRARY_ROOT = _ROOT / "assets" / "library"
 
 
 def load_deploy_config() -> dict | None:
@@ -35,6 +39,7 @@ def deploy_to_wechat(page_files: dict, appid: str, private_key_content: str) -> 
     Returns the path to the generated QR code image if successful, otherwise raises an exception.
     """
     from scaffold import get_scaffold_files
+    from miniprogram_assets import decode_asset_bytes
     
     # 1. Create a persistent temporary directory for the QR code output
     qr_dir = tempfile.mkdtemp(prefix="gemma_qr_")
@@ -68,6 +73,22 @@ def deploy_to_wechat(page_files: dict, appid: str, private_key_content: str) -> 
         if 'js' in page_files:
             with open(os.path.join(page_dir, "index.js"), "w", encoding="utf-8") as f:
                 f.write(page_files['js'])
+
+        # Write uploaded assets into the same projectPath used by miniprogram-ci.
+        for asset in page_files.get("assets", []) or []:
+            asset_path = (asset.get("path") or asset.get("wxml_path", "").lstrip("/")).replace("\\", "/").lstrip("/")
+            if not asset_path or not asset.get("data_b64"):
+                continue
+            full_path = os.path.join(workspace, *asset_path.split("/"))
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            with open(full_path, "wb") as f:
+                f.write(decode_asset_bytes(asset))
+
+        # Keep miniprogram-ci projectPath identical to the exported Zip asset layout.
+        if _LIBRARY_ROOT.exists():
+            dst = Path(workspace) / "assets" / "library"
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(_LIBRARY_ROOT, dst, dirs_exist_ok=True)
                 
         # 3. Write private key (with strict sanitization)
         cleaned_key = private_key_content.strip()
