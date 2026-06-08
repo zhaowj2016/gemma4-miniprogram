@@ -1,5 +1,4 @@
 const ci = require('miniprogram-ci');
-const fs = require('fs');
 
 async function upload() {
   try {
@@ -7,9 +6,14 @@ async function upload() {
     const appid = process.argv[3];
     const privateKeyPath = process.argv[4];
     const qrCodeDest = process.argv[5];
+    const robotArg = process.argv[6] || '1';
+    const robot = Number.parseInt(robotArg, 10);
 
     if (!projectPath || !appid || !privateKeyPath || !qrCodeDest) {
-      throw new Error("Missing arguments. Usage: node upload.js <projectPath> <appid> <privateKeyPath> <qrCodeDest>");
+      throw new Error("Missing arguments. Usage: node upload.js <projectPath> <appid> <privateKeyPath> <qrCodeDest> [robot]");
+    }
+    if (!Number.isInteger(robot) || robot < 1 || robot > 30) {
+      throw new Error(`Invalid robot "${robotArg}". Expected an integer from 1 to 30.`);
     }
 
     const project = new ci.Project({
@@ -20,24 +24,42 @@ async function upload() {
       ignores: ['node_modules/**/*'],
     });
 
-    console.log("Compiling and uploading to WeChat servers...");
+    console.log(JSON.stringify({
+      event: 'wechat_preview_start',
+      appid,
+      projectPath,
+      qrCodeDest,
+      robot,
+    }));
     
-    // Generate preview QR code
-    const previewResult = await ci.preview({
+    await ci.preview({
       project,
-      desc: 'Auto-deployed by Gemma Match',
+      desc: 'MiniPilot Agent Preview',
       setting: {
         es6: true,
         minify: true,
       },
+      robot,
+      bigPackageSizeSupport: true,
       qrcodeFormat: 'image',
       qrcodeOutputDest: qrCodeDest,
       onProgressUpdate: console.log,
     });
 
-    console.log("Preview generated successfully.");
+    console.log(JSON.stringify({
+      event: 'wechat_preview_success',
+      qrCodeDest,
+      robot,
+    }));
   } catch (err) {
-    console.error("Upload failed: ", err);
+    const payload = {
+      event: 'wechat_preview_failed',
+      message: err && err.message ? err.message : String(err),
+      errCode: err && (err.errCode || err.code),
+      errMsg: err && err.errMsg,
+      stack: err && err.stack,
+    };
+    console.error(JSON.stringify(payload, null, 2));
     process.exit(1);
   }
 }
