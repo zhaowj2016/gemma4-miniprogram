@@ -35,3 +35,5 @@ tests/precompile_cache.py
 dev_artifacts/
 ui_flow_test.log
 docs/cross_domain_compounding_playbook.md
+output/playwright/
+vercel_minipilot/public/
