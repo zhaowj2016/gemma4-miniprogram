@@ -23,12 +23,13 @@ def _adapt_wxss_for_html(css: str) -> str:
 
 PHONE_SHELL_CSS = """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#e5e5ea;height:100%;display:flex;justify-content:center;padding:12px 0;}
+html,body{background:#e5e5ea;min-height:100%;display:flex;justify-content:center;padding:12px 0;margin:0;}
 .phone{
   width:375px;background:#1a1a1a;border-radius:50px;
   padding:12px 8px 10px;
   box-shadow:0 20px 60px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.1);
   flex-shrink:0;
+  display:inline-block;
 }
 .status-bar{
   height:26px;display:flex;align-items:center;
@@ -37,8 +38,13 @@ html,body{background:#e5e5ea;height:100%;display:flex;justify-content:center;pad
 .status-bar span{color:#fff;font-size:11px;font-weight:600;}
 .notch{width:80px;height:14px;background:#000;border-radius:8px;margin:0 auto;}
 .screen{
-  width:359px;height:640px;border-radius:38px;
+  width:359px;
+  /* 自适应高度:不写死 640px,跟内容走;最长不超过 1200px 防止极端长页面撑爆 */
+  min-height:480px;max-height:1200px;
+  border-radius:38px;
   overflow-y:auto;overflow-x:hidden;background:#F5F7FA;
+  /* 关键:让 position:sticky 在 .screen 内有滚动容器作为参照系 */
+  position:relative;
 }
 .screen *{
   font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,
@@ -46,11 +52,18 @@ html,body{background:#e5e5ea;height:100%;display:flex;justify-content:center;pad
   font-size:14px;
 }
 .screen button{display:flex;align-items:center;justify-content:center;width:100%;cursor:pointer;border:none;outline:none;}
-.screen input{display:block;width:100%;border:1px solid #eee;border-radius:8px;padding:8px 12px;}
+.screen input{display:block;width:100%;border:1px solid #eee;border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#222;}
+.screen textarea{display:block;width:100%;border:1px solid #eee;border-radius:8px;padding:8px 12px;font-size:14px;background:#fff;color:#222;font-family:inherit;resize:vertical;min-height:60px;}
 .screen img{max-width:100%;display:block;}
 .wx-swiper{position:relative;overflow:hidden;width:100%;min-height:80px;}
 .wx-swiper-item{display:none;width:100%;}
 .wx-swiper-item:first-child{display:block;}
+/* 通用 sticky footer 兜底:不写死 80px,改用 padding 给 .screen 留空间避免被遮挡 */
+.screen{padding-bottom:1px;}
+/* 修复 image 标签缺 width 时的 inline 间隙 */
+.screen img{vertical-align:top;}
+/* 防止 button 默认有奇怪的内联 padding */
+.screen button{padding:0;}
 """
 
 
@@ -238,6 +251,48 @@ def _eval_condition(expr: str, data: dict) -> bool:
             except Exception:
                 return False
     return _is_truthy(_resolve_path(expr, data))
+
+
+# ── Class 表达式提取 (setData 后可重算) ──────────────────────────────────────────
+
+def _html_attr(value: str) -> str:
+    return (
+        (value or "")
+        .replace("&", "&amp;")
+        .replace('"', "&quot;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def _extract_class_expr(class_attr_value: str) -> str:
+    """从 class="X {{ expr }} Y" 提取 expr 部分。
+
+    - 把字面量 base class 放进 data-wx-class-base
+    - 把每个 expr 分别放进 data-wx-class-expr-N, 避免多个三元表达式被拼成错误的 JS
+    - 返回重写后的 class="X Y" + data-* 属性
+    """
+    parts = re.split(r'(\{\{[^}]+\}\})', class_attr_value)
+    base_parts = []
+    expr_parts = []
+    for p in parts:
+        if p.startswith('{{') and p.endswith('}}'):
+            expr_parts.append(p[2:-2].strip())
+        else:
+            base_parts.append(p)
+    base_class = ''.join(base_parts).strip()
+    if not expr_parts:
+        return f'class="{class_attr_value}"'
+    expr_attrs = " ".join(
+        f'data-wx-class-expr-{idx}="{_html_attr(expr)}"'
+        for idx, expr in enumerate(expr_parts)
+    )
+    return (
+        f'class="{_html_attr(base_class)}" '
+        f'data-wx-class-base="{_html_attr(base_class)}" '
+        f'data-wx-class-expr-count="{len(expr_parts)}" '
+        f'{expr_attrs}'
+    )
 
 
 # ── 模板插值 ──────────────────────────────────────────────────────────────────
@@ -463,15 +518,24 @@ def wxml_to_html(wxml: str, data: dict) -> str:
         cls_m = re.search(r'class="([^"]*)"', attrs)
         cls = f' class="{cls_m.group(1)}"' if cls_m else ""
         # Inline onerror catches images that fail before the JS event listener attaches.
+        fallback_js = json.dumps(PLACEHOLDER_IMG)
         onerror = (
             "if(!this.src.startsWith('data:'))"
-            f"{{this.onerror=null;this.src='{PLACEHOLDER_IMG}';}}"
+            f"{{this.onerror=null;this.src={fallback_js};}}"
         )
-        return f'<img{cls} src="{src}" style="display:block;width:100%;object-fit:cover;" onerror="{onerror}" />'
+        return f'<img{cls} src="{src}" style="display:block;width:100%;object-fit:cover;" onerror="{_html_attr(onerror)}" />'
 
     h = re.sub(r"<image\b([^>]*?)/?>\s*(?:</image>)?", img_sub, h)
     h = expand_for_loops(h, data)
     h = apply_wx_if(h, data)   # evaluate with data before bindings are resolved
+    # ── 提取 class 三元表达式 (顶层字段) → data-wx-class-expr ──
+    # 注意:循环内 item.* 字段在 __data 中无对应,重算会失败(被 try/catch 兜底),
+    #       所以只对顶层字段(如 activeTab)有效
+    h = re.sub(
+        r'class="([^"]*\{\{[^}]+\}\}[^"]*)"',
+        lambda m: _extract_class_expr(m.group(1)),
+        h,
+    )
     h = fill_bindings(h, data)
     h = apply_wx_if(h)         # clean up any remaining plain-string conditions
     # Convert bindtap → onclick before stripping other event attrs,
@@ -479,6 +543,35 @@ def wxml_to_html(wxml: str, data: dict) -> str:
     h = re.sub(
         r'\s+bindtap="([^"]*)"',
         lambda m2: f" onclick=\"__wx('{m2.group(1)}', this, event)\"",
+        h,
+    )
+    # catchtap = bindtap + stopPropagation, 用于嵌套点击场景(如 profile 的 order-entry)
+    h = re.sub(
+        r'\s+catchtap="([^"]*)"',
+        lambda m2: f" onclick=\"__wx('{m2.group(1)}', this, event, true)\"",
+        h,
+    )
+    # bindinput → oninput, 让表单输入框可用
+    h = re.sub(
+        r'\s+bindinput="([^"]*)"',
+        lambda m2: f" oninput=\"__wx_input('{m2.group(1)}', this, event)\"",
+        h,
+    )
+    # bindchange → onchange (picker / switch)
+    h = re.sub(
+        r'\s+bindchange="([^"]*)"',
+        lambda m2: f" onchange=\"__wx_change('{m2.group(1)}', this, event)\"",
+        h,
+    )
+    # bindsubmit / bindreset (form)
+    h = re.sub(
+        r'\s+bindsubmit="([^"]*)"',
+        lambda m2: f" onsubmit=\"__wx_form('{m2.group(1)}', this, event, true);return false;\"",
+        h,
+    )
+    h = re.sub(
+        r'\s+bindreset="([^"]*)"',
+        lambda m2: f" onreset=\"__wx_form('{m2.group(1)}', this, event, false)\"",
         h,
     )
     h = re.sub(r"\s+wx:[\w-]+(?:=\"[^\"]*\")?", "", h)
@@ -567,16 +660,68 @@ def render_phone_html(
   // ── WeChat Runtime Shim ────────────────────────────────────────────────────
   var __data = {{}};
   var __handlers = {{}};
+  var __toastEl = null;
+  var __toastTimer = null;
+
+  function __showToast(o){{
+    var title = (o && o.title) ? o.title : '';
+    var icon  = (o && o.icon)  ? o.icon  : 'none';
+    var dur   = (o && o.duration) ? o.duration : 1500;
+    if (!__toastEl) {{
+      __toastEl = document.createElement('div');
+      __toastEl.style.cssText = (
+        'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);' +
+        'background:rgba(0,0,0,.78);color:#fff;padding:14px 22px;border-radius:10px;' +
+        'font-size:14px;z-index:9999;pointer-events:none;opacity:0;transition:opacity .18s;' +
+        'max-width:80%;text-align:center;white-space:pre-wrap;box-shadow:0 6px 20px rgba(0,0,0,.3);'
+      );
+      var screen = document.querySelector('.screen');
+      if (screen) {{ screen.style.position = 'relative'; screen.appendChild(__toastEl); }}
+      else document.body.appendChild(__toastEl);
+    }}
+    var text = (icon === 'success' ? '✓ ' : icon === 'error' ? '✗ ' : icon === 'loading' ? '⏳ ' : '') + title;
+    __toastEl.textContent = text;
+    __toastEl.style.opacity = '1';
+    if (__toastTimer) clearTimeout(__toastTimer);
+    __toastTimer = setTimeout(function(){{ __toastEl.style.opacity = '0'; }}, dur);
+  }}
+
   var wx = {{
-    showToast:function(o){{console.log('[wx]showToast',o&&o.title);}},
-    hideToast:function(){{}},showLoading:function(){{}},hideLoading:function(){{}},
-    showModal:function(o){{if(o&&o.success)o.success({{confirm:true}});}},
-    navigateTo:function(o){{console.log('[wx]nav',o&&o.url);}},
-    navigateBack:function(){{}},switchTab:function(){{}},
-    setNavigationBarTitle:function(){{}},
-    request:function(o){{if(o&&o.fail)o.fail({{errMsg:'not supported in preview'}});}},
-    getSystemInfo:function(o){{if(o&&o.success)o.success({{windowWidth:375,windowHeight:640,pixelRatio:2,platform:'devtools'}});}},
-    getStorageSync:function(){{return null;}},setStorageSync:function(){{}},removeStorageSync:function(){{}},
+    showToast: __showToast,
+    hideToast: function(){{ if (__toastEl) __toastEl.style.opacity = '0'; }},
+    showLoading: function(o){{ __showToast({{title:(o&&o.title)||'加载中...',icon:'loading',duration:99999}}); }},
+    hideLoading: function(){{ if (__toastEl) __toastEl.style.opacity = '0'; }},
+    showModal: function(o){{
+      var title = (o && o.title) || '提示';
+      var content = (o && o.content) || '';
+      var showCancel = o ? (o.showCancel !== false) : true;
+      var okText = (o && o.confirmText) || '确定';
+      var cancelText = (o && o.cancelText) || '取消';
+      var msg = title + (content ? '\\n' + content : '');
+      try {{
+        if (showCancel) {{
+          // 优先用 window.confirm;需要取消分支的话用 confirm/cancel 两次确认会繁琐,
+          // 这里直接走 confirm,模拟 confirm 行为
+          var ok = window.confirm(msg);
+          if (ok) {{ if (o && o.success) o.success({{confirm:true, cancel:false}}); }}
+          else {{ if (o && o.fail) o.fail({{errMsg:'cancel'}}); if (o && o.cancel) o.cancel(); }}
+        }} else {{
+          window.alert(msg);
+          if (o && o.success) o.success({{confirm:true, cancel:false}});
+        }}
+      }} catch (e) {{
+        if (o && o.success) o.success({{confirm:true, cancel:false}});
+      }}
+    }},
+    navigateTo: function(o){{ console.log('[wx]nav', o && o.url); __showToast({{title:'跳转: ' + (o && o.url), icon:'none'}}); }},
+    navigateBack: function(){{}},
+    switchTab: function(){{}},
+    setNavigationBarTitle: function(){{}},
+    request: function(o){{ if (o && o.fail) o.fail({{errMsg:'not supported in preview'}}); }},
+    getSystemInfo: function(o){{ if (o && o.success) o.success({{windowWidth:375,windowHeight:640,pixelRatio:2,platform:'devtools'}}); }},
+    getStorageSync: function(){{ return null; }},
+    setStorageSync: function(){{}},
+    removeStorageSync: function(){{}},
   }};
   function App(c){{if(c&&c.onLaunch)try{{c.onLaunch({{}});}}catch(e){{}}}}
   function getApp(){{return {{}};}}
@@ -586,6 +731,7 @@ def render_phone_html(
   var __page = {{
     data: __data,
     setData: function(updates, cb) {{
+      // 浅合并
       Object.assign(__data, updates);
       __page.data = __data;
       __updateDOM();
@@ -602,18 +748,66 @@ def render_phone_html(
     }}
   }}
 
-  window.__wx = function(method, el, event) {{
+  // 构造小程序事件对象
+  function __buildEvent(type, el, valueOverride) {{
+    return {{
+      type: type,
+      currentTarget: {{ id: el.id || '', dataset: Object.assign({{}}, el.dataset) }},
+      target: {{ id: el.id || '', dataset: Object.assign({{}}, el.dataset) }},
+      detail: type === 'input' || type === 'change' ? {{ value: valueOverride !== undefined ? valueOverride : (el.value || '') }} : {{ x:0, y:0 }},
+      touches: [], changedTouches: [],
+    }};
+  }}
+
+  // 主 tap 入口 (bindtap / catchtap)
+  window.__wx = function(method, el, event, doStop) {{
     var h = __handlers[method];
     if (!h) {{ console.log('[__wx] no handler:', method); return; }}
-    var e = {{
-      type: 'tap',
-      currentTarget: {{ id: el.id, dataset: Object.assign({{}}, el.dataset) }},
-      target: {{ id: el.id, dataset: Object.assign({{}}, el.dataset) }},
-      detail: {{ x: 0, y: 0 }}, touches: [], changedTouches: [],
-    }};
+    if (doStop && event && typeof event.stopPropagation === 'function') {{
+      event.stopPropagation();
+    }}
+    var e = __buildEvent('tap', el);
     try {{ h.call(__page, e); }}
     catch (err) {{ console.log('[__wx error]', method, err); }}
   }};
+
+  // bindinput
+  window.__wx_input = function(method, el, event) {{
+    var h = __handlers[method];
+    if (!h) return;
+    var e = __buildEvent('input', el);
+    try {{ h.call(__page, e); }}
+    catch (err) {{ console.log('[__wx_input error]', method, err); }}
+  }};
+
+  // bindchange (picker / switch)
+  window.__wx_change = function(method, el, event) {{
+    var h = __handlers[method];
+    if (!h) return;
+    var e = __buildEvent('change', el);
+    try {{ h.call(__page, e); }}
+    catch (err) {{ console.log('[__wx_change error]', method, err); }}
+  }};
+
+  // bindsubmit / bindreset
+  window.__wx_form = function(method, el, event, isSubmit) {{
+    var h = __handlers[method];
+    if (!h) return;
+    var detail = isSubmit ? {{ value: __collectFormData(el) }} : {{}};
+    var e = {{ type: isSubmit ? 'submit' : 'reset', currentTarget: el, target: el, detail: detail }};
+    try {{ h.call(__page, e); }}
+    catch (err) {{ console.log('[__wx_form error]', method, err); }}
+  }};
+
+  function __collectFormData(formEl) {{
+    var data = {{}};
+    var inputs = formEl.querySelectorAll('input,textarea');
+    inputs.forEach(function(inp) {{
+      var name = inp.getAttribute('name') || inp.id || '';
+      if (name) data[name] = inp.value || '';
+    }});
+    return data;
+  }}
 
   function __evalExpr(expr) {{
     try {{
@@ -622,18 +816,18 @@ def render_phone_html(
   }}
 
   function __updateDOM() {{
-    // 1. wx:if conditional elements
+    // 1. wx:if 条件元素
     document.querySelectorAll('[data-wx-if]').forEach(function(el) {{
       var expr = el.getAttribute('data-wx-if');
       try {{ el.style.display = __evalExpr(expr) ? '' : 'none'; }} catch (e) {{}}
     }});
-    // 2. Pre-rendered tab sections (dict[variable] pattern, e.g. menu[activeTab])
+    // 2. 预渲染 tab section
     document.querySelectorAll('[data-tab-section]').forEach(function(el) {{
       var section = el.getAttribute('data-tab-section');
       var varName = el.getAttribute('data-tab-var') || 'activeTab';
       el.style.display = (__data[varName] === section) ? '' : 'none';
     }});
-    // 3. Tab button active classes
+    // 3. tab 按钮激活 class
     document.querySelectorAll('[data-tab]').forEach(function(el) {{
       var tabVal  = el.dataset.tab;
       var varName = 'activeTab';
@@ -642,6 +836,22 @@ def render_phone_html(
         if (isActive) el.classList.add('tab-active');
         else el.classList.remove('tab-active');
       }}
+    }});
+    // 4. 重算 class 三元表达式 (setData 后样式不更新问题)
+    document.querySelectorAll('[data-wx-class-expr-count]').forEach(function(el) {{
+      var classes = [];
+      var base = el.getAttribute('data-wx-class-base') || '';
+      if (base) classes.push(base);
+      var count = parseInt(el.getAttribute('data-wx-class-expr-count') || '0', 10);
+      for (var i = 0; i < count; i++) {{
+        var expr = el.getAttribute('data-wx-class-expr-' + i);
+        if (!expr) continue;
+        try {{
+          var v = new Function('data', 'with(data){{return(' + expr + ')}}')(__data);
+          if (v) classes.push(String(v));
+        }} catch (e) {{}}
+      }}
+      el.className = classes.join(' ').trim();
     }});
   }}
 
@@ -661,7 +871,7 @@ def render_phone_html(
 
   // ── Image Error Fallback ──────────────────────────────────────────────────
   document.querySelectorAll('.screen img').forEach(function(img, i) {{
-    var fb = '{PLACEHOLDER_IMG}';
+    var fb = "{PLACEHOLDER_IMG}";
     if (img.complete && img.naturalWidth === 0) {{
       img.src = fb;
     }} else {{

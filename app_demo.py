@@ -3,10 +3,12 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
 from urllib.parse import unquote
+from uuid import uuid4
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -14,10 +16,18 @@ import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parent
 GEMMA_CORE = ROOT / "gemma_core"
-if str(GEMMA_CORE) not in sys.path:
-    sys.path.insert(0, str(GEMMA_CORE))
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+# `streamlit run app_demo.py` pre-populates sys.path with ROOT (the script's
+# own directory) *before* this module runs its own setup. The old `not in
+# sys.path` guards then saw ROOT already present and skipped re-inserting it,
+# leaving GEMMA_CORE ahead of ROOT — so `from validators import ...` resolved
+# to the stale gemma_core/validators.py (whose ALLOWED_SUFFIXES lacks image
+# suffixes) instead of the root validators.py. Removing both first guarantees
+# ROOT ends up before GEMMA_CORE regardless of what the runner pre-populated.
+for _p in (str(GEMMA_CORE), str(ROOT)):
+    if _p in sys.path:
+        sys.path.remove(_p)
+sys.path.insert(0, str(GEMMA_CORE))
+sys.path.insert(0, str(ROOT))
 
 from gemma_client import call_gemma_with_tools, call_gemma_text  # noqa: E402
 from golden_examples import get_golden_example  # noqa: E402
@@ -32,10 +42,13 @@ from render_wxml import render_phone_html  # noqa: E402
 from scaffold import APP_WXSS  # noqa: E402
 from validators import ValidationResult, validate_project  # noqa: E402
 from zip_exporter import export_zip  # noqa: E402
+from agent_trace import TraceRecorder  # noqa: E402
+from generation_report import build_generation_report, normalize_validator_result, sanitize  # noqa: E402
 from miniprogram_assets import assets_to_preview_images, attach_assets_and_fallback, validation_asset_files  # noqa: E402
 from miniprogram_assets import prepare_uploaded_assets  # noqa: E402
 from miniprogram_assets import preprocess_uploaded_image  # noqa: E402
 from image_library import select_image_assets  # noqa: E402
+from provider_health import check_amd_health, check_google_health, check_replay_health  # noqa: E402
 
 
 SHOWCASE_URL = "http://localhost:8504"
@@ -48,9 +61,9 @@ BENCHMARK_PATH = GEMMA_CORE / "benchmark_prompts.json"
 GOLDEN_DIR = GEMMA_CORE / "golden_examples"
 LOG_PATH = ROOT / "demo_cache" / "gemma.log"
 AMD_CONFIG_PATH = Path(r"E:\file+desktop\gemma_amd_config.txt")
-LIVE_SAMPLE_DIR = ROOT / "demo_cache" / "live_samples"
-LIVE_SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-LATEST_SAMPLE_PATH = LIVE_SAMPLE_DIR / "latest.json"
+LIVE_SESSION_DIR = ROOT / "demo_cache" / "live_sessions"
+LIVE_SESSION_DIR.mkdir(parents=True, exist_ok=True)
+LIVE_SESSION_INDEX_PATH = LIVE_SESSION_DIR / "index.json"
 
 DEFAULT_EXAMPLES = [
     ("咖啡店点单页", "生成一个咖啡店点单小程序页面，包含门店封面、分类 Tab、商品列表、购物车和底部结算栏。"),
@@ -64,23 +77,123 @@ def _safe_get(obj, key, default=None):
     return obj.get(key, default) if isinstance(obj, dict) else default
 
 
-def _persist_live_sample(page_files: dict | None, prompt: str = "", trace_data: list | None = None) -> None:
-    if not page_files:
-        return
-    payload = {
-        "saved_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "prompt": prompt,
-        "files": page_files,
-        "trace_data": trace_data or [],
+def _safe_session_id(value: str | None) -> str:
+    text = (value or "").strip()
+    return text if re.fullmatch(r"[A-Za-z0-9_-]{8,80}", text) else ""
+
+
+def _session_path(session_id: str) -> Path:
+    return LIVE_SESSION_DIR / f"{_safe_session_id(session_id)}.json"
+
+
+def _load_session_index() -> list[dict]:
+    if not LIVE_SESSION_INDEX_PATH.exists():
+        return []
+    try:
+        data = json.loads(LIVE_SESSION_INDEX_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    return data if isinstance(data, list) else []
+
+
+def _write_session_index(items: list[dict]) -> None:
+    LIVE_SESSION_INDEX_PATH.write_text(json.dumps(items[:30], ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _validation_to_dict(validation: ValidationResult | None) -> dict:
+    validation = validation or _blank_validation()
+    return {
+        "ok": bool(validation.ok),
+        "hard_errors": list(validation.hard_errors),
+        "warnings": list(validation.warnings),
     }
-    LATEST_SAMPLE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _load_latest_live_sample() -> dict | None:
-    if not LATEST_SAMPLE_PATH.exists():
+def _validation_from_dict(payload: dict | None, page_files: dict | None) -> ValidationResult:
+    if isinstance(payload, dict):
+        return ValidationResult(
+            hard_errors=list(payload.get("hard_errors") or []),
+            warnings=list(payload.get("warnings") or []),
+        )
+    return validate_project(_validator_files(page_files or {}), full_project=False) if page_files else _blank_validation()
+
+
+def _session_label(item: dict) -> str:
+    prompt = str(item.get("prompt") or "").strip().replace("\n", " ")
+    prompt = prompt[:34] + ("..." if len(prompt) > 34 else "")
+    return f"{item.get('saved_at', '')} · {prompt or item.get('session_id', '')}"
+
+
+def _new_session_id() -> str:
+    return f"{time.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
+
+
+def _save_live_session(
+    page_files: dict | None,
+    prompt: str = "",
+    trace_data: list | None = None,
+    raw_debug: dict | None = None,
+    validation: ValidationResult | None = None,
+    session_id: str | None = None,
+    generation_report: dict | None = None,
+    agent_trace_steps: list | None = None,
+    tool_calls: dict | None = None,
+) -> str | None:
+    if not page_files:
+        return None
+    session_id = _safe_session_id(session_id) or _new_session_id()
+    saved_at = time.strftime("%Y-%m-%d %H:%M:%S")
+    payload = {
+        "version": 2,
+        "session_id": session_id,
+        "saved_at": saved_at,
+        "prompt": prompt,
+        "natural_language_input": prompt,
+        "files": page_files,
+        "code": {
+            "wxml": _safe_get(page_files, "wxml", ""),
+            "wxss": _safe_get(page_files, "wxss", ""),
+            "js": _safe_get(page_files, "js", ""),
+        },
+        "trace_data": trace_data or [],
+        "raw_debug": raw_debug or {},
+        "validation": _validation_to_dict(validation),
+        "generation_report": generation_report or {},
+        "agent_trace_steps": agent_trace_steps or [],
+        "tool_calls": tool_calls or {},
+        "phone_preview": {
+            "kind": "rendered_from_saved_wxml_wxss_js_and_assets",
+            "renderer": "render_wxml.render_phone_html",
+        },
+    }
+    payload = sanitize(payload)
+    _session_path(session_id).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    index = [item for item in _load_session_index() if item.get("session_id") != session_id]
+    index.insert(
+        0,
+        {
+            "session_id": session_id,
+            "saved_at": saved_at,
+            "prompt": prompt,
+            "provider": _safe_get(page_files, "provider"),
+            "parse_method": _safe_get(page_files, "parse_method"),
+            "line_count": sum(_line_count(_safe_get(page_files, key, "")) for key in ("wxml", "wxss", "js")),
+        },
+    )
+    _write_session_index(index)
+    return session_id
+
+
+def _load_live_session(session_id: str | None) -> dict | None:
+    session_id = _safe_session_id(session_id)
+    if not session_id:
+        return None
+    path = _session_path(session_id)
+    if not path.exists():
         return None
     try:
-        return json.loads(LATEST_SAMPLE_PATH.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return None
 
@@ -139,7 +252,14 @@ def _clear_prompt() -> None:
     st.session_state.raw_debug = {}
     st.session_state.image_list = None
     st.session_state.used_fallback = False
+    st.session_state.current_session_id = ""
+    st.session_state.generation_report = None
+    st.session_state.agent_trace_steps = []
     st.session_state["_show_deploy"] = False
+    try:
+        st.query_params.clear()
+    except Exception:
+        pass
 
 
 _MODE_OPTIONS = {
@@ -159,6 +279,11 @@ _PARSE_METHOD_DISPLAY = {
     "gemma_raw_tool_call": "Gemma 原生信封解析（自定义适配层）",
     "plain_text_fallback": "纯文本兜底解析",
 }
+_MODEL_DISPLAY = {
+    "google": "gemma-4-26b-a4b-it",
+    "amd": "gemma-31b（vLLM 自托管）",
+}
+GENERATION_RECORDS_LIMIT = 30  # _write_session_index already caps at this; kept here for reference
 
 
 def _configured_backends_label() -> str:
@@ -174,6 +299,52 @@ def _configured_backends_label() -> str:
     ):
         parts.append("Google AI Studio")
     return " + ".join(parts) if parts else "Unknown"
+
+
+@st.cache_data(ttl=15, show_spinner=False)
+def _cached_amd_health() -> dict:
+    """check_amd_health() result, cached for 15s so the 3-5s probe doesn't
+    run on every Streamlit rerun (every widget interaction reruns the script)."""
+    return check_amd_health()
+
+
+_PROVIDER_STATUS_LABELS = {
+    "replay": {"online": "✅ Available", "missing_config": "⚪ Missing", "error": "🔴 Error"},
+    "google": {"online": "✅ Available", "missing_config": "⚪ Missing API Key", "error": "🔴 Error"},
+    "amd_vllm": {"online": "🟢 Online", "offline": "🔴 Offline", "missing_config": "⚪ Missing Config", "error": "🔴 Error"},
+}
+
+
+def _render_provider_status() -> None:
+    """Provider Status panel — Replay / Google Stable Agent Mode / AMD Deep
+    Generation Mode. Read-only; never blocks more than the cached AMD probe."""
+    replay = check_replay_health()
+    google = check_google_health()
+    amd = _cached_amd_health()
+
+    def _label(health: dict) -> str:
+        return _PROVIDER_STATUS_LABELS.get(health["provider"], {}).get(health["status"], health["status"])
+
+    cols = st.columns(3)
+    cols[0].caption(f"**Replay**: {_label(replay)}")
+    cols[1].caption(f"**Google Stable Agent Mode**: {_label(google)}")
+    amd_caption = f"**AMD Deep Generation Mode**: {_label(amd)}"
+    if amd["status"] not in ("online",):
+        amd_caption += f"  \n_{amd['reason']}_"
+    cols[2].caption(amd_caption)
+
+
+def _block_if_amd_unavailable(mode: str) -> bool:
+    """If the user forced 深度生成模式 (deep) but AMD is unavailable, show an
+    error and return True so the caller skips generation entirely — no
+    spinner, no hung request."""
+    if mode != "deep":
+        return False
+    health = check_amd_health()
+    if health.get("ok"):
+        return False
+    st.error(f"🔬 AMD Deep Generation Mode is offline ({health['reason']}). Please use Google Stable Agent Mode or Replay Demo.")
+    return True
 
 
 def _actual_provider_label(page_files: dict | None) -> str:
@@ -331,6 +502,112 @@ def render_agent_trace(trace_data: list[dict]) -> None:
     st.markdown("".join(html), unsafe_allow_html=True)
 
 
+_TRACE_STEP_ICON = {
+    "success": "✅",
+    "warning": "⚠️",
+    "error": "❌",
+    "running": "🔄",
+    "skipped": "⏭️",
+    "pending": "⏳",
+}
+
+
+def _render_detailed_trace(steps: list[dict] | None) -> None:
+    """Renders the 12-step Agent Trace evidence (agent_trace.TraceRecorder output)."""
+    if not steps:
+        return
+    try:
+        with st.expander("🔬 Agent Trace · 详细证据链（12 步）", expanded=False):
+            for step in steps:
+                icon = _TRACE_STEP_ICON.get(str(step.get("status", "skipped")), "•")
+                title = step.get("title") or step.get("step_id") or "Step"
+                message = step.get("message") or ""
+                duration = step.get("duration_ms", 0)
+                st.markdown(f"{icon} **{title}** — {message}  `{duration} ms`")
+                meta = step.get("metadata") or {}
+                if meta:
+                    st.caption(" · ".join(f"{k}: {v}" for k, v in meta.items()))
+    except Exception as exc:
+        st.caption(f"Agent Trace 渲染失败（不影响主流程）：{exc}")
+
+
+def _fmt_duration(ms) -> str:
+    """Render a millisecond duration as a human-friendly seconds/minutes string."""
+    try:
+        seconds = float(ms) / 1000
+    except (TypeError, ValueError):
+        return "0.0s"
+    return f"{seconds / 60:.1f} min" if seconds >= 60 else f"{seconds:.1f}s"
+
+
+def _render_generation_report(report: dict | None) -> None:
+    """Renders the Generation Report panel. Missing fields show as 'unknown' /
+    0 / empty rather than raising, per the evidence-without-crashing requirement."""
+    if not report:
+        st.info("生成一次（或加载一条 Replay 记录）后，这里会显示 Generation Report。")
+        return
+    try:
+        tool = report.get("tool") or {}
+        validator = report.get("validator") or {}
+        repair = report.get("repair_loop") or {}
+        assets = report.get("assets") or {}
+        preview = report.get("preview") or {}
+        export = report.get("export") or {}
+        durations = report.get("durations") or {}
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Provider", report.get("provider", "unknown"))
+        c2.metric("Model", report.get("model", "unknown"))
+        c3.metric("Backend Mode", report.get("backend_mode", "unknown"))
+
+        st.markdown(
+            f"- **Tool**: `{tool.get('name', 'unknown')}` · "
+            f"Tool Call Detected: {'✅' if tool.get('tool_call_detected') else '❌'} · "
+            f"Parse Method: `{tool.get('parse_method', 'unknown')}`"
+        )
+        st.markdown(
+            f"- **Validator**: `{validator.get('status', 'unknown')}` · "
+            f"Hard Errors: {validator.get('hard_errors_count', 0)} · "
+            f"Warnings: {validator.get('warnings_count', 0)}"
+        )
+        if repair.get("attempted"):
+            repair_label = "✅ repaired, now passes" if repair.get("success") else "⚠️ attempted, issues remain"
+        else:
+            repair_label = "skipped / not triggered"
+        st.markdown(
+            f"- **Repair Loop**: {repair_label} · rounds={repair.get('rounds', 0)} · "
+            f"{repair.get('before_errors_count', 0)} → {repair.get('after_errors_count', 0)} hard errors"
+        )
+        st.markdown(
+            f"- **Assets Grounding**: `{assets.get('grounding_status', 'unknown')}` · "
+            f"{len(assets.get('assets_used') or [])} asset(s) used · "
+            f"{len(assets.get('invalid_assets') or [])} invalid"
+        )
+        st.markdown(
+            f"- **Preview**: {'✅ ready' if preview.get('preview_ready') else '⚠️ not ready'} "
+            f"(`{preview.get('preview_type', 'unknown')}`)"
+        )
+        export_label = "✅ ready" if export.get("zip_ready") else "⚠️ not ready"
+        if export.get("zip_path"):
+            export_label += f" · `{export['zip_path']}`"
+        st.markdown(f"- **ZIP Export**: {export_label}")
+        st.markdown(
+            f"- **Durations**: total={_fmt_duration(durations.get('total_ms', 0))} · "
+            f"model_call={_fmt_duration(durations.get('model_call_ms', 0))} · "
+            f"validation={durations.get('validation_ms', 0)} ms · "
+            f"repair={_fmt_duration(durations.get('repair_ms', 0))}"
+        )
+
+        if validator.get("hard_errors") or validator.get("warnings"):
+            with st.expander("Validator details", expanded=False):
+                st.write({"hard_errors": validator.get("hard_errors", []), "warnings": validator.get("warnings", [])})
+
+        with st.expander("Raw Generation Report (JSON)", expanded=False):
+            st.json(report)
+    except Exception as exc:
+        st.warning(f"Generation Report 渲染失败（不影响主流程）：{exc}")
+
+
 def _render_phone(page_files: dict[str, str] | None) -> None:
     if not page_files:
         placeholder = """
@@ -384,6 +661,15 @@ def _run_generation(
 ) -> None:
     img_list = image_list or []
     img_count = len(img_list)
+    session_id = _new_session_id()
+    recorder = TraceRecorder()
+    recorder.add_step(
+        "01_receive_requirement", "Receive Requirement", status="success",
+        message=f"User requirement received ({len(prompt)} chars).",
+        metadata={"prompt_length": len(prompt), "reference_images": img_count},
+    )
+
+    recorder.start("02_build_prompt", "Build Prompt Context")
     uploaded_assets = prepare_uploaded_assets(img_list)
     library_assets = select_image_assets(prompt, limit=8)
     if qa_pairs:
@@ -399,26 +685,48 @@ def _run_generation(
             built_prompt += "\n\n【多模态输入】用户上传了 1 张参考图片，请分析图片内容、配色和风格，在生成的代码中自然融入。"
         elif img_count > 1:
             built_prompt += f"\n\n【多模态输入】用户上传了 {img_count} 张参考图片，请逐一分析并自主决定每张的用途和放置位置。"
+    recorder.end(
+        "02_build_prompt", status="success",
+        message="Prompt assembled with gemma_core prompt builder.",
+        metadata={"prompt_chars": len(built_prompt), "library_assets": len(library_assets), "uploaded_assets": len(uploaded_assets)},
+    )
 
     started = time.time()
     page_files = None
     validation = None
     repair_status = "skipped"
     repair_summary = "No repair needed / Not triggered"
+    repair_before_count = 0
     used_fallback = False
     error = None
+    exception_occurred = False
     mode_label = _MODE_DISPLAY.get(mode, mode)
 
     try:
         with st.status("🧠 Gemma 4 正在生成小程序页面...", expanded=True) as status:
-            st.write(f"📡 正在以 **{mode_label}** 调用 `create_miniprogram_page`（预计 15-30 秒）...")
+            st.write(f"📡 正在以 **{mode_label}** 调用 `create_miniprogram_page`（预计 1-3 分钟，复杂页面可能更久）...")
             if img_count:
                 st.write(f"🖼️ 已附加 {img_count} 张参考图片（多模态输入）")
 
+            recorder.start("03_call_provider", "Call Gemma Provider", metadata={"requested_mode": mode})
             page_files = call_gemma_with_tools(built_prompt, image_list=img_list or None, mode=mode)
+            recorder.end(
+                "03_call_provider", status="success",
+                message=f"Provider returned: {_actual_provider_label(page_files)}.",
+                metadata={"provider": page_files.get("provider"), "fallback_used": bool(page_files.get("fallback_used"))},
+            )
             page_files["assets"] = uploaded_assets
             page_files["library_assets"] = library_assets
             page_files = attach_assets_and_fallback(page_files, uploaded_assets, library_assets)
+
+            parse_method = page_files.get("parse_method")
+            tool_call_detected = parse_method in ("standard_tool_calls", "gemma_raw_tool_call")
+            recorder.add_step(
+                "04_parse_tool_call", "Parse Tool Call",
+                status="success" if tool_call_detected else "warning",
+                message=f"parse_method={parse_method or 'unknown'}",
+                metadata={"parse_method": parse_method or "unknown", "tool_call_detected": tool_call_detected},
+            )
 
             if page_files.get("fallback_used"):
                 actual_label = _PROVIDER_DISPLAY.get(page_files.get("provider"), page_files.get("provider"))
@@ -428,16 +736,38 @@ def _run_generation(
                 )
             st.write(f"✅ 模型返回成功 · {_result_line_summary(page_files)}")
 
+            recorder.add_step(
+                "05_generate_files", "Generate WXML / WXSS / JS",
+                status="success" if _has_core_page_files(page_files) else "warning",
+                message="WXML / WXSS / JS extracted." if _has_core_page_files(page_files) else "Some files are missing.",
+                metadata={
+                    "wxml_lines": _line_count(_safe_get(page_files, "wxml", "")),
+                    "wxss_lines": _line_count(_safe_get(page_files, "wxss", "")),
+                    "js_lines": _line_count(_safe_get(page_files, "js", "")),
+                },
+            )
+
             st.write("🔍 正在校验代码质量...")
+            recorder.start("06_run_validator", "Run Static Validator")
             validation = validate_project(_validator_files(page_files), full_project=False)
+            recorder.end(
+                "06_run_validator",
+                status="success" if validation.ok else "warning",
+                message="Validator passed." if validation.ok else f"{len(validation.hard_errors)} hard error(s), {len(validation.warnings)} warning(s).",
+                metadata={"hard_errors": len(validation.hard_errors), "warnings": len(validation.warnings)},
+            )
 
             if validation.ok:
                 st.write("✅ 代码通过静态校验")
+                recorder.add_step("07_self_correction", "Self-Correction", status="skipped",
+                                   message="No repair needed / Not triggered.")
             else:
                 repair_status = "running"
                 repair_summary = "Validator hard errors were sent back to Gemma for one repair pass"
+                repair_before_count = len(validation.hard_errors)
                 st.write(f"⚠️ 发现 {len(validation.hard_errors)} 个问题：{' · '.join(validation.hard_errors[:2])}{'...' if len(validation.hard_errors) > 2 else ''}")
                 st.write("🔧 启动自愈，重新调用模型修复...")
+                recorder.start("07_self_correction", "Self-Correction", metadata={"before_errors_count": repair_before_count})
                 original_page_files = page_files
                 original_validation = validation
                 try:
@@ -453,6 +783,10 @@ def _run_generation(
                         repair_status = "success"
                         repair_summary = "Repaired validator hard errors - code now passes"
                         st.write(f"✅ 自愈成功，代码通过校验 · {_result_line_summary(page_files)}")
+                        recorder.end(
+                            "07_self_correction", status="success", message=repair_summary,
+                            metadata={"rounds": 1, "before_errors_count": repair_before_count, "after_errors_count": 0},
+                        )
                     else:
                         repair_status = "warning"
                         if len(repaired_validation.hard_errors) <= len(original_validation.hard_errors):
@@ -465,16 +799,25 @@ def _run_generation(
                             kept = "original model output"
                         repair_summary = f"Repair attempted; still has validator issues - keeping {kept} instead of template fallback"
                         st.write("⚠️ 自愈后仍有问题，但已保留模型生成结果，避免回退成固定模板。")
+                        recorder.end(
+                            "07_self_correction", status="warning", message=repair_summary,
+                            metadata={"rounds": 1, "before_errors_count": repair_before_count, "after_errors_count": len(validation.hard_errors)},
+                        )
                 except Exception:
                     repair_status = "warning"
                     repair_summary = "Repair call failed - keeping original model output instead of template fallback"
                     page_files = original_page_files
                     validation = original_validation
                     st.write("⚠️ 自愈调用失败，但已保留模型生成结果，避免回退成固定模板。")
+                    recorder.end(
+                        "07_self_correction", status="error", message=repair_summary,
+                        metadata={"rounds": 1, "before_errors_count": repair_before_count, "after_errors_count": len(validation.hard_errors)},
+                    )
 
             status.update(label="✅ 生成完成", state="complete")
     except Exception as exc:
         error = str(exc)
+        exception_occurred = True
         repair_status = "skipped"
         repair_summary = "Main generation failed before repair — fell back to nearest golden example"
         st.warning(f"调用失败（{error}），已自动回退到最相近的黄金样例，确保演示链路不中断。")
@@ -484,6 +827,17 @@ def _run_generation(
         page_files = attach_assets_and_fallback(page_files, uploaded_assets, library_assets)
         validation = validate_project(_validator_files(page_files), full_project=False)
         used_fallback = True
+        # Fill in any pipeline steps that never ran because the exception
+        # happened before they were reached, so the trace always has 11 steps.
+        for step_id, title in [
+            ("03_call_provider", "Call Gemma Provider"),
+            ("04_parse_tool_call", "Parse Tool Call"),
+            ("05_generate_files", "Generate WXML / WXSS / JS"),
+            ("06_run_validator", "Run Static Validator"),
+            ("07_self_correction", "Self-Correction"),
+        ]:
+            if step_id not in [s["step_id"] for s in recorder.to_list()]:
+                recorder.add_step(step_id, title, status="error", message=f"Skipped: {error}")
         error = None
 
     elapsed = time.time() - started
@@ -504,11 +858,6 @@ def _run_generation(
         error=error,
         img_count=img_count,
     )
-    _persist_live_sample(
-        st.session_state.page_files,
-        prompt=prompt,
-        trace_data=st.session_state.trace_data,
-    )
     st.session_state.last_prompt = prompt
     st.session_state.raw_debug = {
         "prompt_chars": len(prompt),
@@ -525,6 +874,113 @@ def _run_generation(
             "warnings": getattr(validation, "warnings", []),
         },
     }
+
+    # ── 08: Asset grounding evidence ────────────────────────────────────────
+    assets_used = []
+    for asset in (page_files.get("assets") or []) + (page_files.get("library_assets") or []):
+        assets_used.append(asset.get("wxml_path") or asset.get("path") or asset.get("name") or "unknown")
+    grounding_status = "passed" if assets_used else "no_assets_used"
+    recorder.add_step(
+        "08_asset_grounding", "Asset Grounding / Image Library",
+        status="success" if assets_used else "skipped",
+        message=f"{len(assets_used)} asset(s) grounded." if assets_used else "No assets used in this generation.",
+        metadata={"assets_used_count": len(assets_used), "grounding_status": grounding_status},
+    )
+
+    # ── 09: Web preview readiness ───────────────────────────────────────────
+    has_code = _has_core_page_files(page_files)
+    recorder.add_step(
+        "09_render_preview", "Render Web Low-Fidelity Preview",
+        status="success" if has_code else "warning",
+        message="Preview ready." if has_code else "Preview unavailable (missing WXML/WXSS/JS).",
+        metadata={"preview_type": "web_low_fidelity"},
+    )
+
+    # ── 10: ZIP export evidence (best-effort, never fails the main flow) ───
+    zip_ready, zip_path, zip_error = False, "", ""
+    try:
+        zip_bytes = export_zip(page_files) if page_files else b""
+        if zip_bytes:
+            zip_file = LIVE_SESSION_DIR / f"{session_id}.zip"
+            zip_file.write_bytes(zip_bytes)
+            zip_ready = True
+            zip_path = str(zip_file.relative_to(ROOT)).replace("\\", "/")
+    except Exception as exc:
+        zip_error = str(exc)
+    recorder.add_step(
+        "10_export_zip", "Export ZIP",
+        status="success" if zip_ready else ("error" if zip_error else "skipped"),
+        message="ZIP exported." if zip_ready else (zip_error or "ZIP not generated."),
+        metadata={"zip_path": zip_path},
+    )
+
+    # ── 11: Generation Report assembly ──────────────────────────────────────
+    provider = _safe_get(page_files, "provider")
+    parse_method = _safe_get(page_files, "parse_method")
+    durations = {"total_ms": int(elapsed * 1000), "model_call_ms": 0, "validation_ms": 0, "repair_ms": 0}
+    for step in recorder.to_list():
+        if step["step_id"] == "03_call_provider":
+            durations["model_call_ms"] = step["duration_ms"]
+        elif step["step_id"] == "06_run_validator":
+            durations["validation_ms"] = step["duration_ms"]
+        elif step["step_id"] == "07_self_correction":
+            durations["repair_ms"] = step["duration_ms"]
+
+    generation_report = build_generation_report(
+        job_id=session_id,
+        created_at=time.strftime("%Y-%m-%dT%H:%M:%S"),
+        user_prompt=prompt,
+        provider=provider,
+        model=_MODEL_DISPLAY.get(provider, "unknown"),
+        generation_mode="live",
+        backend_mode=mode,
+        tool_call_detected=parse_method in ("standard_tool_calls", "gemma_raw_tool_call"),
+        parse_method=parse_method,
+        files_generated={
+            "wxml": bool(_safe_get(page_files, "wxml", "").strip()),
+            "wxss": bool(_safe_get(page_files, "wxss", "").strip()),
+            "js": bool(_safe_get(page_files, "js", "").strip()),
+        },
+        validator_result=normalize_validator_result(validation),
+        repair_loop={
+            "attempted": repair_status != "skipped",
+            "success": (repair_status == "success") if repair_status != "skipped" else None,
+            "rounds": 0 if repair_status == "skipped" else 1,
+            "before_errors_count": repair_before_count,
+            "after_errors_count": len(validation.hard_errors) if validation else 0,
+        },
+        assets={"assets_used": assets_used, "invalid_assets": [], "grounding_status": grounding_status},
+        preview={"preview_ready": has_code, "preview_type": "web_low_fidelity"},
+        export={"zip_ready": zip_ready, "zip_path": zip_path, **({"error": zip_error} if zip_error else {})},
+        durations=durations,
+        raw_status={"success": not exception_occurred, "error_message": error or ""},
+    )
+    recorder.add_step(
+        "11_generation_report", "Generate Generation Report", status="success",
+        message="Generation report assembled.", metadata={"job_id": session_id},
+    )
+    st.session_state.generation_report = generation_report
+    st.session_state.agent_trace_steps = recorder.to_list()
+
+    saved_session_id = _save_live_session(
+        st.session_state.page_files,
+        prompt=prompt,
+        trace_data=st.session_state.trace_data,
+        raw_debug=st.session_state.raw_debug,
+        validation=st.session_state.validation,
+        session_id=session_id,
+        generation_report=generation_report,
+        agent_trace_steps=st.session_state.agent_trace_steps,
+        tool_calls={
+            "name": "create_miniprogram_page",
+            "tool_call_detected": parse_method in ("standard_tool_calls", "gemma_raw_tool_call"),
+            "parse_method": parse_method or "unknown",
+            "provider": provider or "unknown",
+        },
+    )
+    if saved_session_id:
+        st.session_state.current_session_id = saved_session_id
+        st.session_state.raw_debug["saved_session_id"] = saved_session_id
 
 
 st.set_page_config(page_title="MiniPilot Agent Live Demo", page_icon="MP", layout="wide")
@@ -746,6 +1202,7 @@ for _key, _default in [
     ("gen_mode", "agent"),        # agent | deep
     ("image_list", None),         # list of (bytes, mime_type) for multimodal input
     ("used_fallback", False),
+    ("current_session_id", ""),
     ("_show_deploy", False),
     ("clarify_active", False),    # whether the AI 需求分析 quiz is currently shown
     ("clarify_questions", []),    # list of {q,a,b,c} dicts from CLARIFY_TEMPLATE
@@ -753,6 +1210,10 @@ for _key, _default in [
     ("clarify_err", ""),
     ("_upload_cache_ids", None),  # tuple of uploaded file_ids already processed (avoids redundant reprocessing on rerun)
     ("_upload_cache_imgs", None), # cached (bytes, mime, name, size_mb) tuples for the above
+    ("generation_report", None),  # structured evidence dict, see generation_report.py
+    ("agent_trace_steps", []),    # 12-step pipeline trace, see agent_trace.py
+    ("gen_source_mode", "live"),  # "live" | "replay"
+    ("replay_loaded", False),     # True once a replay record has been loaded into session_state
 ]:
     if _key not in st.session_state:
         st.session_state[_key] = _default
@@ -760,21 +1221,31 @@ if st.session_state.validation is None:
     st.session_state.validation = _blank_validation()
 if st.session_state.trace_data is None:
     st.session_state.trace_data = _empty_trace(st.session_state.input_prompt)
-if not st.session_state.page_files:
-    _latest_sample = _load_latest_live_sample()
-    if isinstance(_latest_sample, dict) and isinstance(_latest_sample.get("files"), dict):
-        st.session_state.page_files = _latest_sample["files"]
-        if _latest_sample.get("prompt") and not st.session_state.input_prompt:
-            st.session_state.input_prompt = _latest_sample["prompt"]
-        if isinstance(_latest_sample.get("trace_data"), list) and _latest_sample["trace_data"]:
-            st.session_state.trace_data = _latest_sample["trace_data"]
-        st.session_state.raw_debug.setdefault("restored_sample", str(LATEST_SAMPLE_PATH))
-else:
-    _persist_live_sample(
-        st.session_state.page_files,
-        prompt=st.session_state.input_prompt,
-        trace_data=st.session_state.trace_data,
+
+
+def _restore_session_payload(session_id: str, payload: dict) -> None:
+    """Populate session_state from a saved live-session record (used by the
+    Replay Verified Demo picker)."""
+    st.session_state.page_files = payload.get("files")
+    st.session_state.input_prompt = str(payload.get("prompt") or "")
+    st.session_state.trace_data = (
+        payload.get("trace_data")
+        if isinstance(payload.get("trace_data"), list)
+        else _empty_trace(st.session_state.input_prompt)
     )
+    st.session_state.raw_debug = dict(payload.get("raw_debug") or {})
+    st.session_state.validation = _validation_from_dict(
+        payload.get("validation"),
+        st.session_state.page_files,
+    )
+    st.session_state.generation_report = payload.get("generation_report") or None
+    st.session_state.agent_trace_steps = (
+        payload.get("agent_trace_steps") if isinstance(payload.get("agent_trace_steps"), list) else []
+    )
+    st.session_state.used_fallback = bool(st.session_state.raw_debug.get("fallback_used"))
+    st.session_state.current_session_id = session_id
+    st.session_state.raw_debug["restored_session"] = session_id
+
 
 st.markdown(
     f"""
@@ -793,6 +1264,66 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
+
+def _render_mode_selector() -> None:
+    """Live Mode (calls the real Gemma provider) vs Replay Verified Demo
+    (loads a previously saved real run, no model call)."""
+    choice = st.radio(
+        "Generation Mode",
+        options=["live", "replay"],
+        format_func=lambda v: "⚡ Live Mode（调用真实 Gemma Provider）" if v == "live" else "🔁 Replay Verified Demo（加载已保存的真实生成记录）",
+        index=["live", "replay"].index(st.session_state.gen_source_mode),
+        horizontal=True,
+        key="_gen_source_mode_radio",
+    )
+    if choice != st.session_state.gen_source_mode:
+        st.session_state.gen_source_mode = choice
+        if choice == "live":
+            st.session_state.replay_loaded = False
+
+    if st.session_state.gen_source_mode != "replay":
+        return
+
+    sessions = _load_session_index()
+    if not sessions:
+        st.info("还没有保存过任何真实生成记录。请先在 Live Mode 下生成一次，再回到 Replay Verified Demo。")
+        return
+
+    options = [str(item.get("session_id")) for item in sessions if item.get("session_id")]
+    pick_col, btn_col = st.columns([3, 1])
+    with pick_col:
+        selected = st.selectbox(
+            "选择一条已保存的真实生成记录",
+            options,
+            format_func=lambda value: _session_label(
+                next((item for item in sessions if item.get("session_id") == value), {"session_id": value})
+            ),
+            label_visibility="collapsed",
+            key="_replay_picker",
+        )
+    with btn_col:
+        load_clicked = st.button("▶️ 加载 Replay 记录", type="primary", use_container_width=True, key="_load_replay_btn")
+
+    if load_clicked:
+        payload = _load_live_session(selected)
+        if isinstance(payload, dict) and isinstance(payload.get("files"), dict):
+            _restore_session_payload(selected, payload)
+            st.session_state.replay_loaded = True
+            st.rerun()
+        else:
+            st.warning(f"该记录已损坏或缺失，已跳过：{selected}")
+
+    if st.session_state.replay_loaded:
+        st.success(
+            "🔁 **Replay Verified Demo** — Loaded from a previously generated real run. "
+            "No model call is executed in this mode."
+        )
+
+
+_render_provider_status()
+_render_mode_selector()
+
 
 def _render_input_panel(*, spacious: bool = False) -> None:
     prompt = st.text_area(
@@ -813,6 +1344,11 @@ def _render_input_panel(*, spacious: bool = False) -> None:
 
     st.caption("⚙️ 生成模式")
     _mode_keys = list(_MODE_OPTIONS.keys())
+    _amd_health = _cached_amd_health()
+    if not _amd_health.get("ok") and "deep" in _mode_keys:
+        _mode_keys.remove("deep")
+        if st.session_state.gen_mode == "deep":
+            st.session_state.gen_mode = "agent"
     _mode_choice = st.radio(
         "选择本次生成使用的后端",
         options=_mode_keys,
@@ -827,6 +1363,8 @@ def _render_input_panel(*, spacious: bool = False) -> None:
         st.caption("优先使用 Google 官方托管的 Gemma 4；若暂不可用会自动切换到 AMD vLLM 兜底，并在结果中如实标注。")
     else:
         st.caption("优先使用自托管的 Gemma 31B（更长上下文、更长输出）；若网关暂不可用会自动切换到 Google AI Studio 兜底，并在结果中如实标注。")
+    if not _amd_health.get("ok"):
+        st.caption(f"🔬 AMD Deep Generation Mode is offline ({_amd_health['reason']}). Please use Google Stable Agent Mode or Replay Demo.")
 
     with st.expander("🖼️ 上传参考图片（可选 · 多模态）", expanded=False):
         st.caption("上传设计稿、产品图、竞品截图等，Gemma 4 多模态自动决策用途")
@@ -894,15 +1432,24 @@ def _render_input_panel(*, spacious: bool = False) -> None:
         unsafe_allow_html=True,
     )
 
+    _is_replay_mode = st.session_state.gen_source_mode == "replay"
+
     c1, c2, c3 = st.columns([1.3, 1, 0.7])
     analyze_clicked = c1.button(
         "🔍 AI 需求分析",
         use_container_width=True,
-        disabled=not prompt.strip(),
+        disabled=not prompt.strip() or _is_replay_mode,
         help="Gemma 4（26B，轻量快速）先理解需求、提几个关键问题，帮你生成更精准的代码",
     )
-    generate_clicked = c2.button("⚡ 快速生成", type="primary", use_container_width=True, disabled=not prompt.strip())
+    generate_clicked = c2.button(
+        "⚡ 快速生成",
+        type="primary",
+        use_container_width=True,
+        disabled=not prompt.strip() or _is_replay_mode,
+    )
     c3.button("Clear", use_container_width=True, on_click=_clear_prompt)
+    if _is_replay_mode:
+        st.caption("🔁 Replay Verified Demo 模式下不会调用模型，请切换到 Live Mode 以重新生成。")
 
     if analyze_clicked:
         with st.spinner("Gemma 4 正在理解您的需求..."):
@@ -927,8 +1474,9 @@ def _render_input_panel(*, spacious: bool = False) -> None:
 
     if generate_clicked:
         st.session_state.clarify_active = False
-        _run_generation(prompt.strip(), mode=st.session_state.gen_mode, image_list=st.session_state.get("image_list"))
-        st.rerun()
+        if not _block_if_amd_unavailable(st.session_state.gen_mode):
+            _run_generation(prompt.strip(), mode=st.session_state.gen_mode, image_list=st.session_state.get("image_list"))
+            st.rerun()
 
     if st.session_state.clarify_active and st.session_state.clarify_questions:
         quiz_box = st.container(key="quiz_card")
@@ -977,11 +1525,12 @@ def _render_input_panel(*, spacious: bool = False) -> None:
             st.rerun()
         if confirm_clicked:
             st.session_state.clarify_active = False
-            _run_generation(
-                prompt.strip(), mode=st.session_state.gen_mode,
-                image_list=st.session_state.get("image_list"), qa_pairs=qa_pairs,
-            )
-            st.rerun()
+            if not _block_if_amd_unavailable(st.session_state.gen_mode):
+                _run_generation(
+                    prompt.strip(), mode=st.session_state.gen_mode,
+                    image_list=st.session_state.get("image_list"), qa_pairs=qa_pairs,
+                )
+                st.rerun()
 
 _has_results = bool(st.session_state.page_files)
 
@@ -1001,6 +1550,7 @@ else:
     with middle:
         st.markdown('<h3 class="panel-title zone-trace">Gemma Agent Trace</h3>', unsafe_allow_html=True)
         render_agent_trace(st.session_state.trace_data)
+        _render_detailed_trace(st.session_state.agent_trace_steps)
     with right:
         st.markdown('<h3 class="panel-title zone-preview">Phone Preview</h3>', unsafe_allow_html=True)
         with st.container(key="phone_frame"):
@@ -1012,7 +1562,7 @@ page_files = st.session_state.page_files or {}
 validation = st.session_state.validation or _blank_validation()
 
 st.markdown('<h3 class="panel-title">Generated Source</h3>', unsafe_allow_html=True)
-tabs = st.tabs(["Source Code", "Validator", "Debug"])
+tabs = st.tabs(["Source Code", "Validator", "Debug", "Generation Report"])
 with tabs[0]:
     # st.tabs renders every tab's content into the DOM at once (only visibility
     # toggles client-side) — with generations now running ~1000-1800 lines,
@@ -1048,9 +1598,14 @@ with tabs[2]:
             st.code("\n".join(lines[-80:]), language="text")
         else:
             st.caption("No demo_cache/gemma.log yet.")
+with tabs[3]:
+    _render_generation_report(st.session_state.generation_report)
 
 if page_files:
     st.caption(f"📊 代码量：{_result_line_summary(page_files)}")
+    _session_id = _safe_session_id(st.session_state.get("current_session_id"))
+    if _session_id:
+        st.caption(f"🔖 Session: `{_session_id}` · 可在 Replay Verified Demo 中重新加载此记录")
 
     _provider = page_files.get("provider")
     _parse_method = page_files.get("parse_method")

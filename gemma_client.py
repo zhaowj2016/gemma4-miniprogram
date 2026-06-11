@@ -59,33 +59,57 @@ _OPENAI_TOOLS = [
 _AMD_VLLM_CONFIG_PATH = r"E:\file+desktop\gemma_amd_config.txt"
 
 
-def _load_amd_vllm_config() -> dict | None:
-    """Read the local AMD vLLM gateway config (BASE_URL / MODEL / Cookie).
+def _setting(name: str) -> str | None:
+    """st.secrets (if available) > environment variable. Never raises."""
+    try:
+        import streamlit as st
+        if name in st.secrets:
+            value = st.secrets[name]
+            if value is not None:
+                return str(value)
+    except Exception:
+        pass
+    return os.environ.get(name)
 
-    Returns None when the file is missing or required fields are absent so
+
+def _load_amd_vllm_config() -> dict | None:
+    """Resolve the AMD vLLM gateway config (BASE_URL / MODEL / Cookie).
+
+    Priority: env vars / st.secrets (AMD_VLLM_BASE_URL, AMD_VLLM_MODEL,
+    DSW_GATEWAY_COOKIE) first, then the local config file
+    E:\\file+desktop\\gemma_amd_config.txt as a fallback.
+
+    Returns None when no source provides a usable AMD_VLLM_BASE_URL, so
     callers transparently fall back to the Google AI Studio path.
     """
-    if not os.path.exists(_AMD_VLLM_CONFIG_PATH):
-        return None
-    cfg = {}
-    try:
-        with open(_AMD_VLLM_CONFIG_PATH, "r", encoding="utf-8-sig") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, _, value = line.partition("=")
-                cfg[key.strip()] = value.strip().strip('"').strip("'")
-    except Exception:
+    if (_setting("ENABLE_AMD_VLLM") or "").strip().lower() in ("0", "false", "no", "off"):
         return None
 
-    base_url = cfg.get("AMD_VLLM_BASE_URL")
-    cookie = cfg.get("DSW_GATEWAY_COOKIE")
-    if not base_url or not cookie:
+    base_url = _setting("AMD_VLLM_BASE_URL")
+    model = _setting("AMD_VLLM_MODEL")
+    cookie = _setting("DSW_GATEWAY_COOKIE")
+
+    if not base_url and os.path.exists(_AMD_VLLM_CONFIG_PATH):
+        cfg = {}
+        try:
+            with open(_AMD_VLLM_CONFIG_PATH, "r", encoding="utf-8-sig") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#") or "=" not in line:
+                        continue
+                    key, _, value = line.partition("=")
+                    cfg[key.strip()] = value.strip().strip('"').strip("'")
+        except Exception:
+            cfg = {}
+        base_url = base_url or cfg.get("AMD_VLLM_BASE_URL")
+        model = model or cfg.get("AMD_VLLM_MODEL")
+        cookie = cookie or cfg.get("DSW_GATEWAY_COOKIE")
+
+    if not base_url:
         return None
     return {
         "base_url": base_url.rstrip("/"),
-        "model": cfg.get("AMD_VLLM_MODEL") or "gemma31b",
+        "model": model or "gemma31b",
         "cookie": cookie,
     }
 
@@ -360,10 +384,13 @@ def _call_amd_vllm_with_tools(
         "stream": True,
     }
     encoded = json.dumps(body).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    if cfg.get("cookie"):
+        headers["Cookie"] = cfg["cookie"]
     req = urllib.request.Request(
         url,
         data=encoded,
-        headers={"Content-Type": "application/json", "Cookie": cfg["cookie"]},
+        headers=headers,
         method="POST",
     )
 
