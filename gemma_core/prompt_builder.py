@@ -94,13 +94,37 @@ _DESIGN_SPEC = """
 - 列表项: 每条数据要包含图片 + 标题 + 副文本 + 操作控件（价格/按钮/标签），不要只有文字。
 """.strip()
 
+_COMPLETENESS_DEEP = """
+AMD vLLM deep generation mode:
+- Target total size: WXML + WXSS + JS should be 2000-3000 real lines. If space is available, keep expanding JS data and WXSS states instead of closing early.
+- WXML target: 420-650 lines. Build 12-18 domain-specific business sections; do not use only the generic Hero + nav grid + card list + fixed CTA pattern.
+- WXSS target: 900-1300 lines. Give every section its own layout, states, empty/loading/skeleton styles, drawer/modal states, pressed states, responsive phone-preview guards, and visual tokens.
+- JS target: 650-1000 lines. Include 10-14 mock-data groups, 8-16 items per group, 8+ fields per item, and at least 25 real methods for filtering, sorting, search, favorites, cart/booking, forms, coupons, recommendations, modal/drawer flows, and state reset.
+- No golden-case flavor: do not copy the old top user header + four icon nav + standard section-header + two-column card grid + bottom CTA composition.
+- Every industry must have its own information architecture and naming. Fitness should feel like training plans and body metrics; maternal/baby should feel like safety credentials and care-stage assessment; kids clothing should feel like dense assortment, sizing, outfits, and checkout.
+- Do not pad with repeated sections, repeated copy, or repeated mock items. Every array and block must serve the scenario.
+- Images are optional. Without an explicit asset_list, do not invent remote URLs and do not reference /assets/library/ paths. Use CSS gradients, panels, badges, progress rings, labels, diagrams, and text-based visual marks.
+- If an asset_list is provided, image src may only use paths from that asset_list.
+- Return complete wxml, wxss, and js through create_miniprogram_page in one call. No explanation text.
+""".strip()
+
+_DEEP_DESIGN_SPEC = """
+Deep mode design rules:
+- Do not use golden examples, few-shot examples, or saved historical pages as structure references.
+- Rebuild the information architecture from the current industry and current user request only.
+- Avoid generic mini-program homepage tropes. Fitness = training plan and membership conversion system. Maternal/baby = trust proof, safety process, care-stage assessment. Kids clothing = assortment, sizing, outfits, coupon, cart, checkout.
+- Avoid old education/event/store-service visual residue, single orange/blue themes, and repeated card grids.
+- CSS-only visual assets are encouraged: gradient covers, progress rings, numbered badges, metric strips, label matrices, sizing tables, timelines, and data panels.
+""".strip()
+
 
 def _constraint_checklist(mode: str = "agent") -> str:
     """Assemble the constraint block; `deep` (self-hosted AMD 31B) gets a richer
     completeness target since its context/output budget isn't rate-limited like
     the cloud-hosted Google path."""
     completeness = _COMPLETENESS_DEEP if mode == "deep" else _COMPLETENESS_STANDARD
-    return f"{_CONSTRAINT_HEAD}\n\n{completeness}\n\n{_DESIGN_SPEC}"
+    design = _DEEP_DESIGN_SPEC if mode == "deep" else _DESIGN_SPEC
+    return f"{_CONSTRAINT_HEAD}\n\n{completeness}\n\n{design}"
 
 
 # Backward-compatible default (agent / Google path) — kept as a module-level
@@ -152,18 +176,30 @@ _STOP_WORDS = {
 }
 
 
-def build_prompt(user_prompt: str, style_hint: str | None = None, asset_list: list[dict] | None = None) -> str:
+def build_prompt(
+    user_prompt: str,
+    style_hint: str | None = None,
+    asset_list: list[dict] | None = None,
+    mode: str = "agent",
+) -> str:
     """Build a few-shot prompt from golden_examples and the user request."""
+    deep_mode = mode == "deep"
     # 高质量黄金样例：作为唯一的主 few-shot 学习对象（最相关的 1 个，带强约束）。
     # 这些样例本身已是 ~2000+ 行的完整高质量页面，单个就足以教学；
     # 仅当没有高质量样例时，才回退到普通召回池补 1 个，以控制上下文体积、避免请求过大。
-    hq_example = _select_high_quality(user_prompt, _load_high_quality_examples())
-    pool = [] if hq_example else _select_examples(user_prompt, _load_examples(), limit=1)
+    hq_example = None if deep_mode else _select_high_quality(user_prompt, _load_high_quality_examples())
+    pool = [] if (deep_mode or hq_example) else _select_examples(user_prompt, _load_examples(), limit=1)
 
     # Random style direction: nudges Gemma to make distinct design decisions
     hint = style_hint or random.choice(_STYLE_POOL)
 
-    parts = [CONSTRAINT_CHECKLIST]
+    parts = [_constraint_checklist(mode)]
+    if deep_mode:
+        parts.append(
+            "【AMD vLLM 深度模式提示预算策略】本次不内嵌完整 few-shot 样例，"
+            "把上下文预算优先留给模型输出完整 WXML/WXSS/JS。"
+            "请严格按照上方深度完整度目标生成，避免短答、空壳区块和重复注水。"
+        )
     if hq_example:
         parts.append(HIGH_QUALITY_GUIDANCE)
         parts.append(
@@ -178,7 +214,7 @@ def build_prompt(user_prompt: str, style_hint: str | None = None, asset_list: li
 
     parts.append(f"设计要求（自主发挥，体现差异化）：{hint}")
 
-    library_assets = select_image_assets(user_prompt, limit=8)
+    library_assets = [] if deep_mode else select_image_assets(user_prompt, limit=8)
     combined_assets = list(asset_list or [])
     seen_paths = {
         (a.get("wxml_path") or a.get("path") or "").replace("\\", "/")
@@ -250,6 +286,90 @@ def parse_clarify_questions(text: str) -> list[dict]:
     """Parse structured question+options list from Gemma's JSON response."""
     import json as _json
     import re as _re
+
+    def _strip_markup(value: str) -> str:
+        value = _re.sub(r"[*_`]+", "", value or "")
+        value = _re.sub(r"\s+", " ", value).strip(" -:：\t\r\n")
+        return value.strip()
+
+    def _prefer_parenthetical(value: str) -> str:
+        value = _strip_markup(value)
+        matches = _re.findall(r"[（(]([^()（）]{2,40})[)）]", value)
+        for item in reversed(matches):
+            item = _strip_markup(item)
+            if item:
+                return item
+        return value
+
+    def _prefer_quoted(value: str) -> str:
+        value = _strip_markup(value)
+        matches = _re.findall(r'["“”]([^"“”]{2,40})["“”]', value)
+        if matches:
+            return _strip_markup(matches[-1])
+        value = _re.sub(r"\s*[（(][^()（）]{1,40}[)）]\s*$", "", value)
+        return value.strip(" \"'“”")
+
+    def _parse_bulleted_questions(raw: str) -> list[dict]:
+        """Recover useful clarify questions from non-JSON model analysis.
+
+        The 26B clarify model sometimes explains its reasoning and emits a
+        "Question 1 / Option A" outline instead of the requested JSON array.
+        Falling back to generic questions wastes that model call, so salvage
+        that outline when it is present.
+        """
+        lines = [_strip_markup(line) for line in raw.splitlines()]
+        lines = [line for line in lines if line]
+        recovered: list[dict] = []
+        current: dict | None = None
+        option_key: str | None = None
+
+        question_re = _re.compile(
+            r"^(?:(?:Refining\s+)?(?:Question|Q)\s*\d+)\s*[:：]\s*(.+)$|^(?:\d+)[.)、]\s*(?:Question\s*)?(.+\?)$",
+            _re.IGNORECASE,
+        )
+        option_re = _re.compile(r"^(?:Option\s*)?([ABCabc])\s*[:：.)、]\s*(.+)$", _re.IGNORECASE)
+        meta_re = _re.compile(
+            r"^(?:Check|Wait|Strict|Core|Target|Potential|Propose|Each|Senior\b|A high-end\b)",
+            _re.IGNORECASE,
+        )
+
+        for line in lines:
+            qm = question_re.match(line)
+            if qm:
+                if current and all(current.get(k) for k in ("q", "a", "b", "c")):
+                    recovered.append(current)
+                num_m = _re.search(r"(?:Question|Q)\s*(\d+)|^(\d+)[.)、]", line, _re.IGNORECASE)
+                q_num = int(num_m.group(1) or num_m.group(2)) if num_m else 0
+                q_text = _prefer_quoted(qm.group(1) or qm.group(2) or "")
+                current = {"_n": q_num, "q": q_text, "a": "", "b": "", "c": ""}
+                option_key = None
+                continue
+
+            om = option_re.match(line)
+            if om and current is not None:
+                option_key = om.group(1).lower()
+                current[option_key] = _prefer_parenthetical(om.group(2))
+                continue
+
+            # Some models wrap long option text onto the next indented line.
+            if current is not None and option_key and not question_re.match(line):
+                if meta_re.match(line):
+                    option_key = None
+                    continue
+                if not option_re.match(line) and len(current[option_key]) < 80:
+                    current[option_key] = _strip_markup(f"{current[option_key]} {line}")
+
+        if current and all(current.get(k) for k in ("q", "a", "b", "c")) and len(recovered) < 3:
+            recovered.append(current)
+
+        best = recovered[-3:]
+        for idx in range(max(0, len(recovered) - 3), -1, -1):
+            window = recovered[idx:idx + 3]
+            if [q.get("_n") for q in window] == [1, 2, 3]:
+                best = window
+                break
+        return [{k: v for k, v in q.items() if not k.startswith("_")} for q in best]
+
     # Strip markdown code fences if present
     text = _re.sub(r'```(?:json)?\s*', '', text).strip()
     m = _re.search(r'\[.*\]', text, _re.DOTALL)
@@ -266,6 +386,9 @@ def parse_clarify_questions(text: str) -> list[dict]:
                     return valid
         except Exception:
             pass
+    recovered = _parse_bulleted_questions(text)
+    if recovered:
+        return recovered
     return [q.copy() for q in _DEFAULT_CLARIFY_QUESTIONS]
 
 
@@ -275,9 +398,10 @@ def build_enriched_prompt(
     image_count: int = 0,
     style_hint: str | None = None,
     asset_list: list[dict] | None = None,
+    mode: str = "agent",
 ) -> str:
     """Build generation prompt from original intent + clarification Q&A + optional images."""
-    base = build_prompt(original, style_hint=style_hint, asset_list=asset_list)
+    base = build_prompt(original, style_hint=style_hint, asset_list=asset_list, mode=mode)
     answered = [(q, a) for q, a in qa_pairs if a and a.strip()]
     if answered:
         qa_lines = "\n".join(f"- {q}：{a}" for q, a in answered)
@@ -336,7 +460,10 @@ def build_review_prompt(user_prompt: str, page_files: dict) -> str:
 
 
 def build_repair_prompt(
-    user_prompt: str, page_files: dict[str, str], errors: list[str] | tuple[str, ...]
+    user_prompt: str,
+    page_files: dict[str, str],
+    errors: list[str] | tuple[str, ...],
+    mode: str = "agent",
 ) -> str:
     """Build a repair prompt that feeds validator errors back to the model."""
     normalized_files = _normalize_page_files(page_files)
@@ -362,7 +489,7 @@ def build_repair_prompt(
             + "\n同一个图片 path 最多复用 2 次；不要把同一张图片铺满商品列表。"
         )
 
-    return f"""{CONSTRAINT_CHECKLIST}
+    return f"""{_constraint_checklist(mode)}
 
 你刚才生成的代码没有通过 validators.validate_project 校验。请只修复下面列出的校验错误, 不要扩展新功能, 不要改变原始需求的范围。
 必须立即通过 create_miniprogram_page 工具返回完整最终版本；如果工具不可用，才输出严格 JSON，且只包含 wxml、wxss、js 三个键。

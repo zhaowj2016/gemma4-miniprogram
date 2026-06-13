@@ -1,0 +1,1552 @@
+/* ============================================================
+   高级门店预约页 · 样式
+   设计语言：鼠尾草绿主调 + 暖中性背景 + 大留白 + 细描边，营造沉静高级的沙龙气质。
+   图标系统全部 CSS 绘制（无 emoji）。底部预约条与 fake tabBar 预留安全区。
+   ============================================================ */
+page {
+  --bg: #f3f3f0;
+  --surface: #ffffff;
+  --ink: #20241f;
+  --ink-2: #5e6359;
+  --ink-3: #9a9e93;
+  --line: #eceeea;
+  --sage: #3f6b5e;
+  --sage-deep: #2e5247;
+  --sage-soft: #e8f0ec;
+  --sand: #b89b6e;
+  --danger: #c0392b;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 234rpx;
+  box-sizing: border-box;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+.op-press {
+  opacity: 0.55;
+}
+
+.op-dim {
+  opacity: 0.82;
+}
+
+.card-press {
+  transform: scale(0.985);
+  opacity: 0.94;
+}
+
+.btn-press {
+  opacity: 0.88;
+}
+
+/* ============================================================ CSS 图标系统 ============================================================ */
+.ic-back, .ic-share, .ic-chevron, .ic-pin, .ic-clock, .ic-gear, .ic-service, .ic-coupon, .ic-help, .ic-calendar {
+  position: relative;
+  width: 40rpx;
+  height: 40rpx;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+
+.ic-back::before {
+  content: "";
+  position: absolute;
+  left: 14rpx;
+  top: 11rpx;
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 3rpx solid currentColor;
+  border-bottom: 3rpx solid currentColor;
+  transform: rotate(45deg);
+}
+
+.ic-chevron {
+  width: 28rpx;
+  height: 28rpx;
+  color: var(--ink-3);
+}
+
+.ic-chevron::before {
+  content: "";
+  position: absolute;
+  left: 6rpx;
+  top: 7rpx;
+  width: 13rpx;
+  height: 13rpx;
+  border-top: 3rpx solid currentColor;
+  border-right: 3rpx solid currentColor;
+  transform: rotate(45deg);
+}
+
+.ic-chevron.sm {
+  width: 22rpx;
+  height: 22rpx;
+}
+
+.ic-chevron.sm::before {
+  left: 4rpx;
+  top: 5rpx;
+  width: 11rpx;
+  height: 11rpx;
+}
+
+.ic-share::before {
+  content: "";
+  position: absolute;
+  left: 9rpx;
+  top: 8rpx;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  border: 3rpx solid currentColor;
+  box-shadow: 16rpx -2rpx 0 -3rpx currentColor;
+}
+
+.ic-share::after {
+  content: "";
+  position: absolute;
+  right: 9rpx;
+  top: 6rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  border: 3rpx solid currentColor;
+  box-shadow: -14rpx 16rpx 0 -3rpx currentColor;
+}
+
+.ic-pin {
+  color: var(--sage);
+}
+
+.ic-pin::before {
+  content: "";
+  position: absolute;
+  left: 10rpx;
+  top: 6rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(45deg);
+}
+
+.ic-pin::after {
+  content: "";
+  position: absolute;
+  left: 17rpx;
+  top: 13rpx;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ic-clock {
+  color: var(--sage);
+}
+
+.ic-clock::before {
+  content: "";
+  position: absolute;
+  left: 8rpx;
+  top: 8rpx;
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  border: 3rpx solid currentColor;
+}
+
+.ic-clock::after {
+  content: "";
+  position: absolute;
+  left: 19rpx;
+  top: 13rpx;
+  width: 3rpx;
+  height: 9rpx;
+  background: currentColor;
+}
+
+.ic-gear {
+  color: var(--ink-2);
+}
+
+.ic-gear::before {
+  content: "";
+  position: absolute;
+  left: 8rpx;
+  top: 8rpx;
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  border: 3rpx solid currentColor;
+}
+
+.ic-gear::after {
+  content: "";
+  position: absolute;
+  left: 17rpx;
+  top: 17rpx;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ic-service::before {
+  content: "";
+  position: absolute;
+  left: 8rpx;
+  top: 8rpx;
+  width: 24rpx;
+  height: 16rpx;
+  border: 3rpx solid currentColor;
+  border-bottom: none;
+  border-radius: 14rpx 14rpx 0 0;
+}
+
+.ic-service::after {
+  content: "";
+  position: absolute;
+  left: 7rpx;
+  top: 22rpx;
+  width: 6rpx;
+  height: 12rpx;
+  background: currentColor;
+  border-radius: 3rpx;
+  box-shadow: 22rpx 0 0 currentColor;
+}
+
+.ic-coupon {
+  color: var(--sage);
+}
+
+.ic-coupon::before {
+  content: "";
+  position: absolute;
+  left: 6rpx;
+  top: 11rpx;
+  width: 28rpx;
+  height: 18rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 4rpx;
+}
+
+.ic-coupon::after {
+  content: "";
+  position: absolute;
+  left: 18rpx;
+  top: 11rpx;
+  height: 18rpx;
+  border-left: 3rpx dotted currentColor;
+}
+
+.ic-help {
+  color: var(--sage);
+}
+
+.ic-help::before {
+  content: "";
+  position: absolute;
+  left: 8rpx;
+  top: 8rpx;
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  border: 3rpx solid currentColor;
+}
+
+.ic-help::after {
+  content: "";
+  position: absolute;
+  left: 17rpx;
+  top: 14rpx;
+  width: 7rpx;
+  height: 7rpx;
+  border-top: 3rpx solid currentColor;
+  border-right: 3rpx solid currentColor;
+  border-radius: 0 8rpx 0 0;
+}
+
+.ic-calendar {
+  color: var(--sage);
+}
+
+.ic-calendar::before {
+  content: "";
+  position: absolute;
+  left: 7rpx;
+  top: 9rpx;
+  width: 26rpx;
+  height: 24rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 4rpx;
+}
+
+.ic-calendar::after {
+  content: "";
+  position: absolute;
+  left: 7rpx;
+  top: 15rpx;
+  width: 26rpx;
+  height: 3rpx;
+  background: currentColor;
+}
+
+.star {
+  position: relative;
+  width: 22rpx;
+  height: 22rpx;
+  background: #d6d8d0;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.star.star-on {
+  background: var(--sand);
+}
+
+.nav-ic {
+  position: relative;
+  width: 46rpx;
+  height: 46rpx;
+  color: inherit;
+}
+
+.nav-ic-home::before {
+  content: "";
+  position: absolute;
+  left: 10rpx;
+  bottom: 8rpx;
+  width: 26rpx;
+  height: 18rpx;
+  border: 3rpx solid currentColor;
+  border-top: none;
+}
+
+.nav-ic-home::after {
+  content: "";
+  position: absolute;
+  left: 7rpx;
+  top: 9rpx;
+  width: 0;
+  height: 0;
+  border-left: 16rpx solid transparent;
+  border-right: 16rpx solid transparent;
+  border-bottom: 13rpx solid currentColor;
+}
+
+.nav-ic-service::before {
+  content: "";
+  position: absolute;
+  left: 11rpx;
+  top: 11rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 2rpx;
+  background: currentColor;
+  box-shadow: 16rpx 0 currentColor, 0 16rpx currentColor, 16rpx 16rpx currentColor;
+}
+
+.nav-ic-cases::before {
+  content: "";
+  position: absolute;
+  left: 9rpx;
+  top: 11rpx;
+  width: 28rpx;
+  height: 24rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 5rpx;
+}
+
+.nav-ic-cases::after {
+  content: "";
+  position: absolute;
+  left: 9rpx;
+  bottom: 12rpx;
+  width: 0;
+  height: 0;
+  border-left: 10rpx solid transparent;
+  border-right: 10rpx solid transparent;
+  border-bottom: 11rpx solid currentColor;
+}
+
+.nav-ic-mine::before {
+  content: "";
+  position: absolute;
+  left: 16rpx;
+  top: 7rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.nav-ic-mine::after {
+  content: "";
+  position: absolute;
+  left: 9rpx;
+  bottom: 7rpx;
+  width: 28rpx;
+  height: 16rpx;
+  border: 3rpx solid currentColor;
+  border-bottom: none;
+  border-radius: 16rpx 16rpx 0 0;
+}
+
+/* ============================================================ 导航栏 ============================================================ */
+.navbar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  z-index: 90;
+  background: transparent;
+  transition: background 0.3s;
+}
+
+.navbar-solid {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.nav-back, .nav-share {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--ink);
+  opacity: 0;
+}
+
+.navbar-solid .nav-title {
+  opacity: 1;
+}
+
+/* ============================================================ 通用 block ============================================================ */
+.block {
+  background: var(--surface);
+  margin: 22rpx 24rpx;
+  border-radius: 28rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 30rpx rgba(32, 36, 31, 0.05);
+}
+
+.block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 26rpx;
+}
+
+.block-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  letter-spacing: 0.5rpx;
+  color: var(--ink);
+}
+
+.block-extra {
+  font-size: 24rpx;
+  color: var(--ink-3);
+}
+
+/* ① Hero */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 700rpx;
+  background: var(--sage-deep);
+}
+
+.hero-swiper {
+  width: 100%;
+  height: 700rpx;
+}
+
+.hero-img {
+  width: 100%;
+  height: 700rpx;
+  display: block;
+}
+
+.hero-mask {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 360rpx;
+  background: linear-gradient(to top, rgba(20, 26, 22, 0.85), rgba(20, 26, 22, 0));
+}
+
+.hero-body {
+  position: absolute;
+  left: 40rpx;
+  right: 40rpx;
+  bottom: 60rpx;
+}
+
+.hero-status {
+  display: inline-block;
+  background: rgba(63, 107, 94, 0.92);
+  border-radius: 24rpx;
+  padding: 6rpx 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.hero-status-text {
+  font-size: 21rpx;
+  color: #fff;
+  letter-spacing: 1rpx;
+}
+
+.hero-name {
+  display: block;
+  font-size: 52rpx;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1rpx;
+}
+
+.hero-tagline {
+  display: block;
+  font-size: 25rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 14rpx;
+}
+
+/* ② 门店概要 */
+.store-meta {
+  display: flex;
+  align-items: center;
+  margin-top: -40rpx;
+  position: relative;
+  z-index: 2;
+  border-radius: 32rpx;
+  padding: 30rpx 20rpx;
+}
+
+.meta-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.meta-num {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.meta-label {
+  font-size: 21rpx;
+  color: var(--ink-3);
+  margin-top: 8rpx;
+}
+
+.meta-divider {
+  width: 2rpx;
+  height: 52rpx;
+  background: var(--line);
+}
+
+.addr-bar {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 32rpx;
+}
+
+.addr-text {
+  flex: 1;
+  font-size: 25rpx;
+  color: var(--ink);
+  margin-left: 12rpx;
+  line-height: 1.45;
+}
+
+.addr-go {
+  display: flex;
+  align-items: center;
+}
+
+.addr-go-text {
+  font-size: 23rpx;
+  color: var(--sage);
+  margin-right: 2rpx;
+}
+
+/* ③ 服务项目 */
+.srv {
+  display: flex;
+  position: relative;
+  border: 3rpx solid var(--line);
+  border-radius: 22rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.srv-on {
+  border-color: var(--sage);
+  background: var(--sage-soft);
+}
+
+.srv-img {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 16rpx;
+  display: block;
+  flex-shrink: 0;
+}
+
+.srv-body {
+  flex: 1;
+  padding: 4rpx 0 4rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.srv-top {
+  display: flex;
+  align-items: center;
+}
+
+.srv-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.srv-hot {
+  background: #fbeae6;
+  border-radius: 6rpx;
+  padding: 3rpx 12rpx;
+  margin-left: 14rpx;
+}
+
+.srv-hot-text {
+  font-size: 19rpx;
+  color: var(--danger);
+}
+
+.srv-desc {
+  font-size: 23rpx;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin: 12rpx 0;
+  flex: 1;
+}
+
+.srv-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.srv-dur {
+  display: flex;
+  align-items: center;
+}
+
+.srv-dur .ic-clock {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.srv-dur .ic-clock::before {
+  left: 4rpx;
+  top: 4rpx;
+  width: 18rpx;
+  height: 18rpx;
+}
+
+.srv-dur .ic-clock::after {
+  left: 13rpx;
+  top: 8rpx;
+  height: 7rpx;
+}
+
+.srv-dur-text {
+  font-size: 22rpx;
+  color: var(--ink-3);
+  margin-left: 6rpx;
+}
+
+.srv-price {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: var(--sage-deep);
+}
+
+.srv-check {
+  position: absolute;
+  right: 22rpx;
+  top: 22rpx;
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 50%;
+  border: 3rpx solid #d6d8d0;
+  box-sizing: border-box;
+}
+
+.srv-on .srv-check {
+  border-color: var(--sage);
+  background: var(--sage);
+}
+
+.srv-on .srv-check::before {
+  content: "";
+  position: absolute;
+  left: 9rpx;
+  top: 8rpx;
+  width: 12rpx;
+  height: 7rpx;
+  border-left: 3rpx solid #fff;
+  border-bottom: 3rpx solid #fff;
+  transform: rotate(-45deg);
+}
+
+/* ④ 造型师 */
+.sty-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.sty-row {
+  display: flex;
+}
+
+.sty {
+  width: 190rpx;
+  flex-shrink: 0;
+  margin-right: 20rpx;
+  border: 3rpx solid var(--line);
+  border-radius: 22rpx;
+  padding: 24rpx 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sty-on {
+  border-color: var(--sage);
+  background: var(--sage-soft);
+}
+
+.sty-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin-bottom: 16rpx;
+}
+
+.sty-name {
+  font-size: 27rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.sty-title {
+  font-size: 21rpx;
+  color: var(--ink-3);
+  margin-top: 6rpx;
+}
+
+.sty-rate {
+  display: flex;
+  align-items: center;
+  margin-top: 12rpx;
+}
+
+.sty-rate-text {
+  font-size: 22rpx;
+  color: var(--sand);
+  font-weight: 700;
+  margin-left: 6rpx;
+}
+
+/* ⑤ 日期 */
+.date-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.date-row {
+  display: flex;
+}
+
+.date {
+  position: relative;
+  width: 110rpx;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+  border-radius: 18rpx;
+  background: #f4f5f2;
+  margin-right: 18rpx;
+}
+
+.date-on {
+  background: var(--sage);
+}
+
+.date-week {
+  font-size: 21rpx;
+  color: var(--ink-2);
+}
+
+.date-day {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 8rpx;
+}
+
+.date-on .date-week, .date-on .date-day {
+  color: #fff;
+}
+
+.date-dot {
+  position: absolute;
+  right: 22rpx;
+  top: 16rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--sand);
+}
+
+/* ⑥ 时段 */
+.slot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.slot {
+  width: 31.5%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+  border: 3rpx solid var(--line);
+  border-radius: 16rpx;
+  margin-bottom: 18rpx;
+  box-sizing: border-box;
+}
+
+.slot-time {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.slot-state {
+  font-size: 20rpx;
+  color: var(--sage);
+  margin-top: 6rpx;
+}
+
+.slot-on {
+  border-color: var(--sage);
+  background: var(--sage-soft);
+}
+
+.slot-full {
+  background: #f4f4f3;
+}
+
+.slot-full .slot-time {
+  color: var(--ink-3);
+}
+
+.slot-full .slot-state {
+  color: var(--ink-3);
+}
+
+/* ⑦ 表单 */
+.form-block {
+  padding-bottom: 14rpx;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 0;
+  border-bottom: 2rpx solid var(--line);
+}
+
+.field:last-child {
+  border-bottom: none;
+}
+
+.field-col {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.field-label {
+  width: 160rpx;
+  flex-shrink: 0;
+  font-size: 27rpx;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.field-col .field-label {
+  width: auto;
+  margin-bottom: 18rpx;
+}
+
+.req {
+  color: var(--danger);
+  margin-left: 6rpx;
+}
+
+.field-input {
+  flex: 1;
+  font-size: 27rpx;
+  color: var(--ink);
+}
+
+.ph {
+  color: var(--ink-3);
+}
+
+.field-area {
+  width: 100%;
+  height: 150rpx;
+  background: #f5f6f3;
+  border-radius: 16rpx;
+  padding: 22rpx;
+  font-size: 26rpx;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+/* ⑧ 门店环境 */
+.env-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.env-row {
+  display: flex;
+}
+
+.env-img {
+  width: 280rpx;
+  height: 200rpx;
+  border-radius: 18rpx;
+  margin-right: 18rpx;
+  flex-shrink: 0;
+}
+
+/* ⑨ 评价 */
+.review {
+  padding: 26rpx 0;
+  border-top: 2rpx solid var(--line);
+}
+
+.review:first-child {
+  border-top: none;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.review-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-right: 18rpx;
+}
+
+.review-user {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.review-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.review-meta {
+  font-size: 21rpx;
+  color: var(--ink-3);
+  margin-top: 4rpx;
+}
+
+.review-stars {
+  display: flex;
+}
+
+.review-stars .star {
+  margin-left: 4rpx;
+}
+
+.review-text {
+  display: block;
+  font-size: 26rpx;
+  color: var(--ink);
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+}
+
+.review-imgs {
+  display: flex;
+}
+
+.review-img {
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 12rpx;
+  margin-right: 14rpx;
+}
+
+.end-note {
+  text-align: center;
+  padding: 20rpx 0 40rpx;
+}
+
+.end-note-text {
+  font-size: 22rpx;
+  color: var(--ink-3);
+  letter-spacing: 2rpx;
+}
+
+/* ============================================================ 服务 Tab ============================================================ */
+.pane-hd {
+  padding: 120rpx 36rpx 6rpx;
+}
+
+.pane-hd-title {
+  font-size: 46rpx;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.pane-hd-sub {
+  display: block;
+  font-size: 25rpx;
+  color: var(--ink-3);
+  margin-top: 10rpx;
+}
+
+.grp-title {
+  margin-bottom: 20rpx;
+}
+
+.grp-title-text {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--sage-deep);
+  border-left: 6rpx solid var(--sage);
+  padding-left: 16rpx;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 0;
+  border-bottom: 2rpx solid var(--line);
+}
+
+.price-row:last-child {
+  border-bottom: none;
+}
+
+.price-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.price-name {
+  font-size: 27rpx;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.price-desc {
+  font-size: 21rpx;
+  color: var(--ink-3);
+  margin-top: 6rpx;
+}
+
+.price-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.price-num {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--sage-deep);
+}
+
+.price-dur {
+  font-size: 20rpx;
+  color: var(--ink-3);
+  margin-top: 4rpx;
+}
+
+.card-promo {
+  padding-bottom: 32rpx;
+}
+
+.vipcard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 3rpx solid var(--line);
+  border-radius: 20rpx;
+  padding: 26rpx;
+  margin-bottom: 18rpx;
+}
+
+.vipcard-on {
+  border-color: var(--sage);
+  background: var(--sage-soft);
+}
+
+.vipcard-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.vipcard-name {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.vipcard-desc {
+  font-size: 22rpx;
+  color: var(--ink-3);
+  margin-top: 8rpx;
+}
+
+.vipcard-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.vipcard-price {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: var(--sage-deep);
+}
+
+.vipcard-value {
+  font-size: 21rpx;
+  color: var(--ink-3);
+  margin-top: 4rpx;
+}
+
+.card-btn {
+  margin-top: 16rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  background: linear-gradient(100deg, var(--sage-deep), var(--sage));
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  padding: 0;
+}
+
+.card-btn::after {
+  border: none;
+}
+
+/* ============================================================ 案例 Tab ============================================================ */
+.seg {
+  display: flex;
+  background: #f2f3f0;
+  border-radius: 18rpx;
+  padding: 6rpx;
+  margin-bottom: 30rpx;
+}
+
+.seg-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  border-radius: 14rpx;
+}
+
+.seg-on {
+  background: #fff;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.06);
+}
+
+.seg-text {
+  font-size: 26rpx;
+  color: var(--ink-2);
+}
+
+.seg-on .seg-text {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.works-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.work {
+  width: 48.5%;
+  border-radius: 20rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+  position: relative;
+}
+
+.work-img {
+  width: 100%;
+  height: 360rpx;
+  display: block;
+}
+
+.work-meta {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 30rpx 20rpx 18rpx;
+  background: linear-gradient(to top, rgba(20, 26, 22, 0.8), rgba(20, 26, 22, 0));
+}
+
+.work-title {
+  display: block;
+  font-size: 25rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.work-by {
+  display: block;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4rpx;
+}
+
+/* ============================================================ 我的 Tab ============================================================ */
+.mine-hero {
+  padding: 130rpx 40rpx 44rpx;
+  background: linear-gradient(160deg, var(--sage-deep), var(--sage));
+}
+
+.mine-top {
+  display: flex;
+  align-items: center;
+}
+
+.mine-avatar {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(255, 255, 255, 0.35);
+  margin-right: 24rpx;
+}
+
+.mine-id {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mine-name {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #fff;
+}
+
+.mine-tag {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 10rpx;
+}
+
+.mine-set {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mine-set .ic-gear {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.mine-balance {
+  display: flex;
+  margin-top: 40rpx;
+}
+
+.bal-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bal-num {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bal-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 6rpx;
+}
+
+.booking-card {
+  margin-top: -28rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.bk-tag {
+  display: inline-block;
+  background: var(--sage-soft);
+  border-radius: 6rpx;
+  padding: 5rpx 16rpx;
+}
+
+.bk-tag-text {
+  font-size: 20rpx;
+  color: var(--sage-deep);
+  font-weight: 600;
+}
+
+.bk-service {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 18rpx 0 16rpx;
+}
+
+.bk-info {
+  display: flex;
+  margin-bottom: 24rpx;
+}
+
+.bk-info-item {
+  display: flex;
+  align-items: center;
+  margin-right: 32rpx;
+}
+
+.bk-info-text {
+  font-size: 23rpx;
+  color: var(--ink-2);
+  margin-left: 8rpx;
+}
+
+.bk-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bk-btn {
+  padding: 14rpx 36rpx;
+  border-radius: 36rpx;
+  margin-left: 18rpx;
+}
+
+.bk-btn-ghost {
+  border: 2rpx solid var(--line);
+}
+
+.bk-btn-fill {
+  background: var(--sage);
+}
+
+.bk-btn-text {
+  font-size: 24rpx;
+  color: var(--ink-2);
+}
+
+.bk-btn-text-fill {
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 0;
+  border-bottom: 2rpx solid var(--line);
+}
+
+.menu-row:last-child {
+  border-bottom: none;
+}
+
+.menu-ic {
+  width: 44rpx;
+  height: 44rpx;
+  position: relative;
+  margin-right: 22rpx;
+}
+
+.menu-label {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--ink);
+}
+
+.menu-extra {
+  font-size: 23rpx;
+  color: var(--ink-3);
+  margin-right: 12rpx;
+}
+
+/* ============================================================ 底部预约条 ============================================================ */
+.actionbar {
+  position: fixed;
+  left: 0;
+  bottom: 110rpx;
+  width: 100%;
+  height: 112rpx;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  padding: 0 28rpx;
+  box-sizing: border-box;
+  z-index: 80;
+}
+
+.ab-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90rpx;
+}
+
+.ab-left .ic-service {
+  color: var(--sage);
+}
+
+.ab-left-text {
+  font-size: 19rpx;
+  color: var(--ink-3);
+  margin-top: 4rpx;
+}
+
+.ab-summary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 12rpx;
+  padding-right: 16rpx;
+}
+
+.ab-summary-label {
+  font-size: 20rpx;
+  color: var(--ink-3);
+}
+
+.ab-summary-text {
+  font-size: 25rpx;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 4rpx;
+}
+
+.ab-btn {
+  width: 280rpx;
+  height: 84rpx;
+  line-height: 84rpx;
+  border-radius: 42rpx;
+  background: linear-gradient(100deg, var(--sage-deep), var(--sage));
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  padding: 0;
+}
+
+.ab-btn::after {
+  border: none;
+}
+
+/* ============================================================ 底部 fake tabBar ============================================================ */
+.tabbar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 110rpx;
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 2rpx solid var(--line);
+  display: flex;
+  z-index: 85;
+}
+
+.tabbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+}
+
+.tabbar-label {
+  font-size: 20rpx;
+  margin-top: 6rpx;
+}
+
+.tab-active {
+  color: var(--sage);
+}
+
+.tab-active .tabbar-label {
+  font-weight: 700;
+}
+
+/* 图片循环包裹层（wx:for 落在 view 上，兼容性更好） */
+.env-wrap {
+  flex-shrink: 0;
+}
+
+.review-img-wrap {
+  flex-shrink: 0;
+}

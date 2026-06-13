@@ -1,0 +1,70 @@
+{
+  "checks": [
+    {
+      "name": "lab_8800_phone_visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "lab_8800_muse_text_present",
+      "ok": true,
+      "detail": "text_len=735"
+    },
+    {
+      "name": "lab_8800_swiper_ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "lab_8800_bad_selector_absent",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "lab_8800_interactive_after_clicks_nonblank",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_phone_visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_muse_text_present",
+      "ok": true,
+      "detail": "text_len=735"
+    },
+    {
+      "name": "main_8810_swiper_ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_bad_selector_absent",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_interactive_after_clicks_nonblank",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "screenshots_same_size",
+      "ok": true,
+      "detail": "(430, 1296) vs (430, 1296)"
+    },
+    {
+      "name": "screenshots_pixel_identical_after_interactions",
+      "ok": false,
+      "detail": "rms=7.326485282317735, bbox=(81, 1032, 351, 1072)"
+    }
+  ],
+  "passed": 11,
+  "failed": 1,
+  "screenshots": {
+    "lab_8800": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\dynamic_compare_8800_lab.png",
+    "main_8810": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\dynamic_compare_8810_main.png"
+  }
+}

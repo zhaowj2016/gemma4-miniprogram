@@ -1,0 +1,53 @@
+{
+  "url": "http://127.0.0.1:8505",
+  "checks": [
+    {
+      "name": "main_app_still_visible_before_click",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "golden_button_visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "phone_preview_frame_visible",
+      "ok": true,
+      "detail": "frames=2"
+    },
+    {
+      "name": "golden_case_rendered_in_main_preview",
+      "ok": true,
+      "detail": "text_len=735"
+    },
+    {
+      "name": "fixed_renderer_no_bad_swiper_selector",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "swiper_runtime_present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "golden_case_clicks_work",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "screenshot_saved",
+      "ok": true,
+      "detail": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\8505_golden_loaded_in_main.png"
+    },
+    {
+      "name": "no_gemma_log_append_for_golden_button",
+      "ok": true,
+      "detail": "before=155690, after=155690"
+    }
+  ],
+  "passed": 9,
+  "failed": 0,
+  "screenshot": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\8505_golden_loaded_in_main.png"
+}

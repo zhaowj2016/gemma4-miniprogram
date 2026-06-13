@@ -57,6 +57,7 @@ _OPENAI_TOOLS = [
 ]
 
 _AMD_VLLM_CONFIG_PATH = r"E:\file+desktop\gemma_amd_config.txt"
+GOOGLE_AI_STUDIO_MODEL = "gemma-4-31b-it"
 
 
 def _setting(name: str) -> str | None:
@@ -238,23 +239,35 @@ def call_gemma_text(
     }
     _log.info(f"[clarify] model={model} images={len(image_list) if image_list else (1 if image_data else 0)} prompt_len={len(prompt)}")
     encoded = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=encoded,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-        text = result["candidates"][0]["content"]["parts"][0]["text"]
-        _log.info(f"[clarify] OK response_len={len(text)} preview={text[:120].replace(chr(10),' ')}")
-        return text
-    except urllib.error.HTTPError as e:
-        _log.warning(f"[clarify] HTTP {e.code} model={model}")
-        raise
-    except (KeyError, IndexError) as e:
-        _log.warning(f"[clarify] parse error: {e}")
-        return ""
+
+    # Google AI Studio 偶发瞬时 5xx（观测到 0.8s 内快速返回 500，重试即恢复）。
+    # 澄清环节没有跨后端兜底，这里对 5xx 做最多 2 次短退避重试，避免一次
+    # 抖动就把用户打到通用兜底问题。4xx（如 key 无效、429 配额）不重试。
+    last_http_error = None
+    for attempt in range(3):
+        if attempt:
+            time.sleep(1.5 * attempt)
+            _log.info(f"[clarify] retry {attempt}/2 model={model}")
+        req = urllib.request.Request(
+            url, data=encoded,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+            text = result["candidates"][0]["content"]["parts"][0]["text"]
+            _log.info(f"[clarify] OK response_len={len(text)} preview={text[:120].replace(chr(10),' ')}")
+            return text
+        except urllib.error.HTTPError as e:
+            _log.warning(f"[clarify] HTTP {e.code} model={model} attempt={attempt + 1}")
+            if e.code < 500:
+                raise
+            last_http_error = e
+        except (KeyError, IndexError) as e:
+            _log.warning(f"[clarify] parse error: {e}")
+            return ""
+    raise last_http_error
 
 
 # Gemma's own tool-call token format does not match the OpenAI tool_calls
@@ -369,18 +382,19 @@ def _call_amd_vllm_with_tools(
     keeps the proxy from observing a "silent" gap and returning 504.
     """
     url = f"{cfg['base_url']}/v1/chat/completions"
+    provider_started = time.monotonic()
     body = {
         "model": cfg["model"],
         "messages": _build_openai_messages(prompt, image_data, image_mime, image_list),
         "tools": _OPENAI_TOOLS,
-        "tool_choice": "auto",
+        "tool_choice": {"type": "function", "function": {"name": "create_miniprogram_page"}},
         "temperature": 0.7,
         # 输出预算 vs 上下文权衡（关键）：
         #   实测输入(完整样例 + 图库 asset_list + 约束)约 26-28K token 且有浮动。
         #   - vLLM 64K 上下文：输入+输出须 < 65536，故输出上限只能给到 ~30000（留安全余量，
         #     否则会出现「差几个 token」的 400 → 兜底 Google）。30000 足够模型常规输出。
         #   - 若 vLLM 升到 128K：把这里提到 48000，可稳定容纳 ~2000 行完整输出，不再撞边界。
-        "max_tokens": 30000,
+        "max_tokens": int(_setting("AMD_VLLM_MAX_TOKENS") or "48000"),
         "stream": True,
     }
     encoded = json.dumps(body).encode("utf-8")
@@ -454,6 +468,15 @@ def _call_amd_vllm_with_tools(
     )
     if parsed["parse_method"] == "standard_tool_calls":
         _log.info("[generate][amd_vllm] ✅ AMD vLLM standard tool_calls parsed successfully")
+    parsed.update({
+        "provider": "amd",
+        "actual_provider": "amd",
+        "model": cfg["model"],
+        "actual_model": cfg["model"],
+        "backend": "amd_vllm",
+        "provider_latency_ms": int((time.monotonic() - provider_started) * 1000),
+        "provider_latency_source": "measured",
+    })
     return parsed
 
 
@@ -478,8 +501,9 @@ def _call_google_ai_studio_with_tools(
 
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemma-4-31b-it:generateContent?key={api_key}"
+        f"{GOOGLE_AI_STUDIO_MODEL}:generateContent?key={api_key}"
     )
+    provider_started = time.monotonic()
 
     parts = _build_parts(prompt, image_data, image_mime, image_list)
     img_count = len(image_list) if image_list else (1 if image_data else 0)
@@ -562,6 +586,12 @@ def _call_google_ai_studio_with_tools(
                         "js": str(args["js"]),
                         "parse_method": "standard_tool_calls",
                         "provider": "google",
+                        "actual_provider": "google",
+                        "model": GOOGLE_AI_STUDIO_MODEL,
+                        "actual_model": GOOGLE_AI_STUDIO_MODEL,
+                        "backend": "google_ai_studio",
+                        "provider_latency_ms": int((time.monotonic() - provider_started) * 1000),
+                        "provider_latency_source": "measured",
                     }
     except (KeyError, IndexError, TypeError):
         pass
@@ -583,6 +613,12 @@ def _call_google_ai_studio_with_tools(
                 "js": parsed["js"],
                 "parse_method": "plain_text_fallback",
                 "provider": "google",
+                "actual_provider": "google",
+                "model": GOOGLE_AI_STUDIO_MODEL,
+                "actual_model": GOOGLE_AI_STUDIO_MODEL,
+                "backend": "google_ai_studio",
+                "provider_latency_ms": int((time.monotonic() - provider_started) * 1000),
+                "provider_latency_source": "measured",
             }
     except (KeyError, IndexError, TypeError):
         pass
@@ -642,10 +678,16 @@ def call_gemma_with_tools(
         result["fallback_reason"] = reason
         return result
 
+    def _as_requested(result: dict) -> dict:
+        result.setdefault("requested_mode", mode)
+        result.setdefault("fallback_used", False)
+        result.setdefault("fallback_reason", "")
+        return result
+
     if mode == "deep":
         if amd_cfg:
             try:
-                return _amd()
+                return _as_requested(_amd())
             except Exception as e:
                 _log.warning(f"[generate][amd_vllm] FAILED in deep mode, falling back to Google AI Studio: {e}")
                 return _as_fallback(_google(), f"AMD vLLM 自托管网关调用失败：{e}")
@@ -657,7 +699,7 @@ def call_gemma_with_tools(
 
     if mode == "agent":
         try:
-            return _google()
+            return _as_requested(_google())
         except Exception as e:
             if amd_cfg:
                 _log.warning(f"[generate][google] FAILED in agent mode, falling back to AMD vLLM: {e}")
@@ -670,7 +712,7 @@ def call_gemma_with_tools(
     # mode == "auto" (default): system decides — AMD first when configured, else Google
     if amd_cfg:
         try:
-            return _amd()
+            return _as_requested(_amd())
         except Exception as e:
             _log.warning(f"[generate][amd_vllm] FAILED, falling back to Google AI Studio: {e}")
-    return _google()
+    return _as_requested(_google())

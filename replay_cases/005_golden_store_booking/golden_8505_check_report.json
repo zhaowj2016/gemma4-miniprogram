@@ -1,0 +1,53 @@
+{
+  "url": "http://127.0.0.1:8505",
+  "checks": [
+    {
+      "name": "golden_caption_visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "has_component_iframe",
+      "ok": true,
+      "detail": "frames=2"
+    },
+    {
+      "name": "phone_visible_in_8505",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "muse_text_present",
+      "ok": true,
+      "detail": "text_len=735"
+    },
+    {
+      "name": "swiper_ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "bad_selector_absent",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "interactive_after_clicks_nonblank",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "screenshot_saved",
+      "ok": true,
+      "detail": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\golden_8505_streamlit.png"
+    },
+    {
+      "name": "no_gemma_log_append",
+      "ok": true,
+      "detail": "before=155690, after=155690"
+    }
+  ],
+  "passed": 9,
+  "failed": 0,
+  "screenshot": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\golden_8505_streamlit.png"
+}

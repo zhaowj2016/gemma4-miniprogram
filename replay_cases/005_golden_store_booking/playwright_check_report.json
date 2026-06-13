@@ -1,0 +1,50 @@
+{
+  "case_id": "005_golden_store_booking",
+  "preview": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\preview.html",
+  "screenshot": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\replay_005_current_renderer.png",
+  "checks": [
+    {
+      "name": "page_open",
+      "ok": true,
+      "detail": "file:///E:/Antigravity%20IDE/project/gemma_match/replay_cases/005_golden_store_booking/preview.html"
+    },
+    {
+      "name": "phone_preview_visible",
+      "ok": true,
+      "detail": "screen=359 tabs=4"
+    },
+    {
+      "name": "tabbar_exists_horizontal",
+      "ok": true,
+      "detail": "{\"tabCount\": 4, \"tabYs\": [1207, 1207, 1207, 1207]}"
+    },
+    {
+      "name": "no_horizontal_overflow",
+      "ok": true,
+      "detail": "screen 359->359 body=375 doc=430"
+    },
+    {
+      "name": "carousel_not_cover_body",
+      "ok": true,
+      "detail": "heroBottom=456 nextTop=519"
+    },
+    {
+      "name": "actionbar_stable",
+      "ok": true,
+      "detail": "{\"x\": 36, \"y\": 1150, \"w\": 359, \"h\": 56}"
+    },
+    {
+      "name": "tabs_switch_not_blank",
+      "ok": true,
+      "detail": "[{\"idx\": 0, \"activeIndex\": 0, \"visiblePanes\": [{\"i\": 0, \"display\": \"block\", \"h\": 2531, \"textLen\": 3325}]}, {\"idx\": 1, \"activeIndex\": 1, \"visiblePanes\": [{\"i\": 1, \"display\": \"block\", \"h\": 1153, \"textLen\": 1373}]}, {\"idx\": 2, \"activeIndex\": 2, \"visiblePanes\": [{\"i\": 2, \"display\": \"block\", \"h\": 593, \"textLen\": 897}]}, {\"idx\": 3, \"activeIndex\": 3, \"visiblePanes\": [{\"i\": 3, \"display\": \"block\", \"h\": 602, \"textLen\": 532}]}]"
+    },
+    {
+      "name": "screenshot_saved",
+      "ok": true,
+      "detail": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\replay_005_current_renderer.png"
+    }
+  ],
+  "passed": 8,
+  "failed": 0,
+  "console_errors": []
+}

@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "name": "main_app_visible",
+      "ok": true,
+      "detail": "Deploy\\n\\nMINIPILOT AGENT \\xb7 LIVE MVP GENERATOR\\n\\n\\u4ece\\u4e00\\u53e5\\u751f\\u610f\\u9700\\u6c42\\u5230\\u5c0f\\u7a0b\\u5e8f MVP\\n\\n\\u4e00\\u53e5\\u751f\\u610f\\u9700\\u6c42\\uff0c\\u751f\\u6210\\u5c0f\\u7a0b\\u5e8f MVP\\u3002 Powered by Gemma 4. \\u63cf\\u8ff0\\u4f60\\u7684\\u5546\\u5bb6\\u9700\\u6c42\\uff0cGemma 4 \\u4f1a\\u5148"
+    },
+    {
+      "name": "not_golden_only_page",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "screenshot_saved",
+      "ok": true,
+      "detail": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\8505_main_restored.png"
+    }
+  ],
+  "passed": 3,
+  "failed": 0,
+  "screenshot": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\8505_main_restored.png"
+}

@@ -2,22 +2,39 @@ __pycache__/
 *.py[cod]
 *.pyo
 .DS_Store
+
+# Dependencies
 node_modules/
 .opencode/node_modules/
-*.zip
-demo_cache/
+
+# Environment and local secrets
 .env
 *.credentials.json
 deploy_config.json
 dummy_key.key
-tests/test_deploy.py
-.claude/
 
-# 本地工具缓存 / 内部协作文件 / 早期原型残留（不属于提交内容）
+# Build and framework output
+.next/
+out/
+build/
+dist/
+.vercel/
+*.zip
+
+# Local tool caches and collaboration state
+.claude/
 .opencode/
 .mavis/
+.worktrees/
 coordination/
 legacy-python/
+demo_cache/
+eval_output/
+
+# Root-level generated mini-program output folders.
+/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]/
+
+# Legacy local prototypes and generated files
 generator.py
 manifest_parser.py
 preview_app.py
@@ -30,16 +47,14 @@ tsconfig.json
 eslint.config.mjs
 postcss.config.mjs
 tests/precompile_cache.py
+tests/test_deploy.py
 
-# 调试截图 / UI 流程测试日志 / 临时探针产物（开发期产物，非提交内容）
+# Debug screenshots, UI-flow logs, probes, and temporary output
 dev_artifacts/
 ui_flow_test.log
+*.log
 docs/cross_domain_compounding_playbook.md
 output/playwright/
 vercel_minipilot/public/
 scripts/amd/_out/
-
-# 本地 worktree / 评测产物 / 临时测试文件（不提交）
-.worktrees/
-eval_output/
 _tmp_mojibake_test.json

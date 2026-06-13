@@ -1,0 +1,47 @@
+{
+  "case_id": "005_golden_store_booking",
+  "created_at": "2026-06-12T14:33:54+08:00",
+  "calls_gemma": false,
+  "uses_live_generation": false,
+  "line_counts": {
+    "wxml": 343,
+    "wxss": 1552,
+    "js": 293,
+    "total": 2188
+  },
+  "validator": {
+    "ok": true,
+    "hard_errors": [],
+    "warnings": [
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item.src}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item.src}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item.avatar}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item.avatar}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{ri}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item.src}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{item.src}}",
+      "pages/index/index.wxml: <image> src 使用动态绑定，无法逐项验证真实图片文件: {{me.avatar}}"
+    ]
+  },
+  "preview": {
+    "ok": true,
+    "path": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\preview.html",
+    "error": ""
+  },
+  "zip": {
+    "ok": true,
+    "path": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\minipilot_export.zip",
+    "error": "",
+    "entries": [
+      "app.json",
+      "app.js",
+      "app.wxss",
+      "project.config.json",
+      "pages/index/index.json",
+      "pages/index/index.wxml",
+      "pages/index/index.wxss",
+      "pages/index/index.js"
+    ]
+  }
+}

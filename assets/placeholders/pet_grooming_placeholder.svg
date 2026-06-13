@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="375" height="250" viewBox="0 0 375 250">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8eaf0"/>
+      <stop offset="100%" stop-color="#dce0e8"/>
+    </linearGradient>
+  </defs>
+  <rect width="375" height="250" fill="url(#bg)"/>
+  <text x="188" y="110" text-anchor="middle" font-family="Arial,sans-serif" font-size="42">🐾</text>
+  <text x="188" y="148" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#8892a0">Pet Grooming</text>
+  <text x="188" y="168" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#a0a8b4">Placeholder · Awaiting pet assets</text>
+</svg>

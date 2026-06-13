@@ -1,0 +1,26 @@
+{
+  "checks": [
+    {
+      "name": "8505_phone_frame_found",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "8505_dynamic_clicks_ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "phone_initial_same_size",
+      "ok": false,
+      "detail": "(376, 1552) vs (376, 1453)"
+    }
+  ],
+  "passed": 2,
+  "failed": 1,
+  "screenshots": {
+    "lab_phone": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\phone_initial_8800_lab.png",
+    "main_8505_phone": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\phone_initial_8505_main.png",
+    "streamlit": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\golden_8505_streamlit.png"
+  }
+}

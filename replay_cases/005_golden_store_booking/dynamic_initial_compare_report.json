@@ -1,0 +1,50 @@
+{
+  "checks": [
+    {
+      "name": "lab_8800_phone_visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "lab_8800_swiper_ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "lab_8800_clickable",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_phone_visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_swiper_ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "main_8810_clickable",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "screenshots_same_size",
+      "ok": true,
+      "detail": "(430, 1296) vs (430, 1296)"
+    },
+    {
+      "name": "screenshots_pixel_identical",
+      "ok": true,
+      "detail": "rms=0.0, bbox=None"
+    }
+  ],
+  "passed": 8,
+  "failed": 0,
+  "screenshots": {
+    "lab_8800": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\dynamic_initial_8800_lab.png",
+    "main_8810": "E:\\Antigravity IDE\\project\\gemma_match\\replay_cases\\005_golden_store_booking\\screenshots\\dynamic_initial_8810_main.png"
+  }
+}

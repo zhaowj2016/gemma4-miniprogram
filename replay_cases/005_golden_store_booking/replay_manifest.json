@@ -1,0 +1,37 @@
+{
+  "case_id": "005_golden_store_booking",
+  "title": "MUSE aesthetic store booking replay case",
+  "source_repo": "E:/Antigravity IDE/project/minipilot_preview_lab",
+  "source_files": {
+    "wxml": "golden_examples/high_quality/store_booking/index.wxml",
+    "wxss": "golden_examples/high_quality/store_booking/index.wxss",
+    "js": "golden_examples/high_quality/store_booking/index.js",
+    "validation_report": "preview_generation_integration_package/03_replay_case_005/replay_case_005_validation_report.md",
+    "screenshots": "regression_output/005/*.png"
+  },
+  "local_files": {
+    "wxml": "index.wxml",
+    "wxss": "index.wxss",
+    "js": "index.js",
+    "validation_report": "validation_report.md",
+    "screenshots": "screenshots/"
+  },
+  "line_counts": {
+    "wxml": 343,
+    "wxss": 1552,
+    "js": 293,
+    "total": 2188
+  },
+  "replay_mode": {
+    "calls_gemma": false,
+    "uses_live_generation": false,
+    "loads_fixed_triple": true,
+    "renderer": "current ORIG_REPO render_wxml.render_phone_html"
+  },
+  "user_request": "做一个高级美学造型沙龙的门店预约页，可以选服务、造型师、日期、时段。",
+  "notes": [
+    "This case is intentionally added as a fixed replay baseline.",
+    "Do not overwrite render_wxml.py or prompt_builder.py for this replay case.",
+    "If current ORIG_REPO renderer fails, record the failure before proposing minimal patches."
+  ]
+}
